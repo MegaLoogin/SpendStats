@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<meta charset="Windows-1251">
+<head>
+    <link href="index.css" rel="stylesheet">
+</head>
+<body>
+    <main style=" justify-content: center; display: flex;">
+        <form>
+        <section style="margin: 100px;  min-width: 400px; max-width: 500px;">
+            <h1></h1>
+            <div class="nice-form-group">
+                <label>Ник баера</label>
+                <select id="username" type="text" list="usernames" value="" required>
+                    <option value="" disabled selected>Выберите ник</option>
+                </select>
+            </div>
+
+            <div class="nice-form-group">
+                <label>Гео</label>
+                <select id="geos" list="geos" placeholder="" value="" required>
+                    <option value="" disabled selected>Выберите гео</option>
+                </select>
+            </div>
+
+            <div class="nice-form-group">
+                <label>Оффер</label>
+                <select id="offers" list="offers" placeholder="" value="" required>
+                    <option value="" disabled selected>Выберите оффер</option>
+                </select>
+            </div>
+
+            <div class="nice-form-group">
+                <label>Дата</label>
+                <input id="date" type="date" placeholder="Выберите дату" required value="" max="2011-10-11"/>
+            </div>
+
+            <div class="nice-form-group">
+                <label>Сумма спенда</label>
+                <input id="spend" style="min-width: 200px;" type="number" step="0.01" placeholder="Введите сумму спенда" required/>
+            </div>
+
+            <div class="nice-form-group">
+                <label>Название оффера: <span id="offerName"></span></label>
+                <label>Тип оффера: <span id="offerType"></span></label>
+                <!-- <label>Количество FTD: <span id="ftdCount">0</span></label> -->
+                <label>Общее Количество: <span id="allCount">0</span></label>
+            </div>
+
+            <div class="nice-form-group">
+                <button id="sendData" type="button">Отправить</button>
+                <br/>
+                <label id="status"></label>
+            </div>
+            
+        </section>
+    </form>
+    </main>
+    <script src="index.js"></script>
+</body>
