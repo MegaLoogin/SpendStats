@@ -23,7 +23,7 @@ services:
             - 80:8090
             # - 443:443
         volumes:
-            - ./web-react/public:/var/www/html
+            - ./web-react/build:/var/www/html
             # - ./nginx/sites-avaliable:/etc/nginx/sites-avaliable
             # - ./nginx/ssl:/etc/nginx/ssl
             - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
