@@ -10,6 +10,8 @@ services:
             - KT_TOKEN=$KT_TOKEN
             # - TG_TOKEN=$TG_TOKEN
             - KT_DOMAIN=$KT_DOMAIN
+            - LOCAL_KEY=$LOCAL_KEY
+            - PUBLIC_KEY=$PUBLIC_KEY
             # - CHAT_ID=$CHAT_ID
         stdin_open: true
         tty: true
@@ -21,7 +23,7 @@ services:
             - 80:8090
             # - 443:443
         volumes:
-            - ./web:/var/www/html
+            - ./web-react/public:/var/www/html
             # - ./nginx/sites-avaliable:/etc/nginx/sites-avaliable
             # - ./nginx/ssl:/etc/nginx/ssl
             - ./nginx/default.conf:/etc/nginx/conf.d/default.conf

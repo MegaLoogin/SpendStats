@@ -8,8 +8,7 @@ export const DataSchema = new Schema({
     sale: Number,
     spend: Number,
     revenue: Number,
-    profit: Number,
-    data: [Object]
+    profit: Number
 }, {versionKey: false});
 
 const namesList = [];

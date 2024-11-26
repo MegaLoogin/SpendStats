@@ -12,7 +12,7 @@ const url = `mongodb://${MONGO_USER}:${MONGO_PASS}@mongodb:27017/${MONGO_DB}?aut
 app.use(cors({
     credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb'}));
 app.use(router);
 
 (async () => {

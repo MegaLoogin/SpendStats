@@ -50,7 +50,7 @@ window.onload = async () => {
 usernames.onchange = async () => {
     const buyerId = usernames.value;
 
-    offers.innerHTML = "<option disabled selected>Выберите оффер</option>";
+    offers.innerHTML = "<option disabled selected>пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ</option>";
     offersData = await post("/api/getOffers", { buyerId });
 
     for(let geo of offersData.avaliableGeos){
@@ -64,7 +64,7 @@ usernames.onchange = async () => {
 }
 
 geos.onchange = async () => {
-    offers.innerHTML = "<option disabled selected>Выберите оффер</option>";
+    offers.innerHTML = "<option disabled selected>пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ</option>";
     filtredOffers = [];
     if(offersData != null){
         filtredOffers = offersData.offers.filter(v => v.country.includes(geos.value));
@@ -101,7 +101,7 @@ date.onchange = offers.onchange = async () => {
     const newDate = new Date(date.value).toLocaleDateString();
     const timezone = "Europe/Moscow";
 
-    if(date.value != "" && offers.value != "Выберите оффер"){
+    if(date.value != "" && offers.value != "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ"){
         // let allFtdCount = allAllCount = 0;
         // offersToSend = {};
 
@@ -124,21 +124,21 @@ date.onchange = offers.onchange = async () => {
 }
 
 sendDataButton.onclick = async () => {
-    if(date.value != "" && offers.value != "Выберите оффер"){
+    if(date.value != "" && offers.value != "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ"){
         let selectedOffer = filtredOffers.find(v => v.id == offers.value);
         sendDataButton.disabled = true;
-        statusLabel.innerText = "Загрузка";
+        statusLabel.innerText = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
         post("/api/addData", {offerData: selectedOffer, data: clicksData, buyerName: usernames.options[usernames.selectedIndex].text, spend: spend.value, date: new Date(date.value)})
         .then((v) => {
             console.log(v);
             if(v.status == "ok")
-                statusLabel.innerHTML = "Отправлено";
+                statusLabel.innerHTML = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
             else
-                statusLabel.innerHTML = "Ошибка<br/>" + v.text;
+                statusLabel.innerHTML = "пїЅпїЅпїЅпїЅпїЅпїЅ<br/>" + v.text;
         })
         .catch((r) => {
             console.log(r);
-            statusLabel.innerHTML = "Ошибка"
+            statusLabel.innerHTML = "пїЅпїЅпїЅпїЅпїЅпїЅ"
         })
         .finally(() => sendDataButton.disabled = false);
     }

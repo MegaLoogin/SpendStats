@@ -10,3 +10,7 @@ router.post("/getData", ktController.getData);
 router.post("/getClicks", ktController.getClicks);
 
 router.post("/addData", dbController.addData);
+router.get("/getOffers", dbController.getOffers);
+router.post("/getOffersByUser", dbController.getOffersByUser);
+router.get("/getUsers", dbController.getUsers);
+router.post("/getDataByFilter", dbController.getDataByFilter);

@@ -5,6 +5,7 @@ export const OfferSchema = new Schema({
     users: [Schema.Types.ObjectId],
     geo: [String],
     name: String,
+    title: String,
     dateStart: Date,
     isSpend: Boolean
 }, {versionKey: false});
