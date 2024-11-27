@@ -3,6 +3,10 @@ import models, { createModel } from "./models/data-model.js";
 import offerModel from "./models/offer-model.js";
 import userModel from "./models/user-model.js";
 
+const ONE_DAY = 24 * 60 * 60 * 1000;
+
+// const localDate = (date) => date ? new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' }) : new Date().toLocaleString('en-CA', { timeZone: 'Europe/Moscow' });
+
 class DBService {
     async addUser(username, tgId){
         try{
@@ -44,6 +48,16 @@ class DBService {
         }
     }
 
+    async updateOfferLastDate(user, offerIdName){
+        try{
+            user.offers[offerIdName].lastDate = new Date();
+            user.markModified('offers');
+            await user.save();
+        }catch(e){
+            console.log(e);
+        }
+    }
+
     async addDataToOffer(offerData, username, date, data, spend){
         spend = parseFloat(spend);
         let user = await userModel.findOne({name: username});
@@ -53,7 +67,7 @@ class DBService {
 
         if(!user) user = await this.addUser(username, 0);
 
-        if(!offer) offer = await this.addOffer(offerData.id, offerData.name, offerData.name.split("|")[2].trim("").toLowerCase(), offerData.country, new Date(), offerData.payout_auto);
+        if(!offer) offer = await this.addOffer(offerData.id, offerData.name, offerData.name.split("|")[2].trim("").toLowerCase(), offerData.country, (new Date()).toISOString(), offerData.payout_auto);
 
         if(needLink) await this.linkUserToOffer(username, offerData.id);
 
@@ -79,6 +93,9 @@ class DBService {
         profit = revenue - spend;
 
         (await offerDataModel.create({user: user.id, spend, profit, revenue, click, lead, sale, date})).save();
+
+        if( (new Date()) - (new Date(date)) < ONE_DAY )
+            await this.updateOfferLastDate(user, offer.idName);
     }
 
     async getOffers(){
@@ -98,39 +115,24 @@ class DBService {
 
     arrayToObject = (arr, key) =>
         arr.reduce((acc, obj) => {
-          acc[obj[key]] = obj;
-          return acc;
+            acc[obj[key]] = obj;
+            return acc;
         }, {});
 
-    mergeMultipleObjects = (objects) => {
+    mergeObjectsWithFilter = (objects, allowedKeys) => {
         return objects.reduce((acc, current) => {
             for (const key in current) {
-            // Если ключ уже есть, объединяем вложенные объекты
-            acc[key] = acc[key] || {};
-            for (const nestedKey in current[key]) {
-                acc[key][nestedKey] = (acc[key][nestedKey] || 0) + current[key][nestedKey];
-            }
+                acc[key] = acc[key] || {};
+      
+                for (const nestedKey in current[key]) {
+                    if (allowedKeys.includes(nestedKey)) {
+                        acc[key][nestedKey] = (acc[key][nestedKey] || 0) + current[key][nestedKey];
+                    }
+                }
             }
             return acc;
         }, {});
     };
-
-    mergeObjectsWithFilter = (objects, allowedKeys) => {
-        return objects.reduce((acc, current) => {
-          for (const key in current) {
-            // Если ключ отсутствует, создаём пустой объект
-            acc[key] = acc[key] || {};
-      
-            // Объединяем вложенные объекты, оставляя только разрешённые ключи
-            for (const nestedKey in current[key]) {
-              if (allowedKeys.includes(nestedKey)) {
-                acc[key][nestedKey] = (acc[key][nestedKey] || 0) + current[key][nestedKey];
-              }
-            }
-          }
-          return acc;
-        }, {});
-      };
       
 
     async getDataByFilter(filter){
@@ -168,7 +170,7 @@ class DBService {
             }
 
             const merged = this.mergeObjectsWithFilter(offersData, ["click", "lead", "sale", "spend", "revenue", "profit"]);
-            const result = Object.entries(merged).map(([date, value]) => {date = (new Date(date)).toISOString(); return { id: date, date, ...value }});
+            const result = Object.entries(merged).map(([date, value]) => {date = new Date(); return { id: date, date, ...value }});
             return result;
         }else{
             throw new Error(`Incorrect filter!`);

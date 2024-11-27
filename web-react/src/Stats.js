@@ -1,10 +1,11 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { Button, TextField } from "@mui/material";
 import { BasicDatePicker, SelectInput } from "./Components.js";
 import { DataGrid } from '@mui/x-data-grid';
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Button } from "@mui/material";
+import { LOCAL_KEY } from "./App.js";
 
 const api = axios.create({
     "baseURL": "http://localhost/api/"
@@ -39,14 +40,14 @@ export function Stats(){
 
     const [ searchParams, setSearchParams ] = useSearchParams();
 
+    const navigate = useNavigate();
+
     async function onUserSelect(value) {
         const data = (await api.post("getOffersByUser", {userId: value})).data.data;
         setOffers(data.map(v => [v._id, v.title]));
     }
 
-    async function onOfferSelect(value) {
-        // console.log(value, offers);
-    }
+    async function onOfferSelect(value) { }
 
     async function onIntervalSelect(value) {
         const data = intervals.find(v => v[0] === value);
@@ -94,7 +95,7 @@ export function Stats(){
                 const allCount = { click: 0, lead: 0, sale: 0, spend: 0, revenue: 0, profit: 0};
 
                 data.forEach(v => {
-                    rowsTemp.push({ id: v._id, date: v.date.split("T")[0], click: v.click, lead: v.lead, sale: v.sale, spend: v.spend, revenue: round(v.revenue), profit: round(v.profit) });
+                    rowsTemp.push({ id: v._id, date: v.date.split("T")[0], click: v.click, lead: v.lead, sale: v.sale, spend: v.spend + " $", revenue: round(v.revenue) + " $", profit: round(v.profit) + " $" });
                     Object.keys(allCount).forEach(k => allCount[k] += v[k]);
                 });
 
@@ -120,24 +121,26 @@ export function Stats(){
     }, []);
 
     function Footer(props){
-        const row = [{ id: 0, date: "", click: props.click, lead: props.lead, sale: props.sale, spend: props.spend, revenue: props.revenue, profit: props.profit }]
+        const row = [{ id: 0, date: "", click: props.click, lead: props.lead, sale: props.sale, spend: props.spend ? props.spend + " $" : "", revenue: props.revenue ? props.revenue + " $" : "", profit: props.profit ? props.profit + " $" : "" }]
         return <div>
             <DataGrid rows={row} columns={columns} hideFooter columnHeaderHeight={0}/>
         </div>;
     }
 
     return (
-        <div style={{margin: "0 auto", padding: "10px", borderRadius: "5px",backgroundColor: "white", justifyContent: "center", maxWidth: "720px"}}>
-            <div style={{display: "block"}}>
-                <div style={{display: "flex"}}>
-                    <BasicDatePicker label="Start" value={dateStart} setValue={setDateStart} callback={() => {}}/>
-                    <BasicDatePicker label="End" value={dateEnd} setValue={setDateEnd} callback={() => {}}/>
-                    <div style={{marginTop: "8px"}}><SelectInput label="Интервал" value={interval} setValue={setInterval} array={intervals} fullWidth={false} callback={onIntervalSelect}></SelectInput></div>
+        <div>
+            <Button sx={{display: "block", backgroundColor: "white", margin: "5px", marginLeft: "9px"}} variant="outlined" color="inherit" onClick={() => navigate(`/${LOCAL_KEY}/sendForm`)}>Отправка</Button>
+            <div style={{margin: "0 auto", padding: "10px", borderRadius: "5px",backgroundColor: "white", justifyContent: "center", maxWidth: "720px"}}>
+                <div style={{display: "block"}}>
+                    <div style={{display: "flex"}}>
+                        <BasicDatePicker label="Start" value={dateStart} setValue={setDateStart} callback={() => {}}/>
+                        <BasicDatePicker label="End" value={dateEnd} setValue={setDateEnd} callback={() => {}}/>
+                        <div style={{marginTop: "8px"}}><SelectInput label="Интервал" value={interval} setValue={setInterval} array={intervals} fullWidth={false} callback={onIntervalSelect}></SelectInput></div>
+                    </div>
+                    <SelectInput label="Имя" value={name} setValue={setName} array={users} fullWidth={false} callback={onUserSelect}/>
+                    <SelectInput label="Оффер" value={offer} setValue={setOffer} array={offers} fullWidth={false} callback={onOfferSelect}/>
                 </div>
-                <SelectInput label="Имя" value={name} setValue={setName} array={users} fullWidth={false} callback={onUserSelect}/>
-                <SelectInput label="Оффер" value={offer} setValue={setOffer} array={offers} fullWidth={false} callback={onOfferSelect}/>
-                {/* <Button variant="outlined" style={{margin: "10px"}} color="inherit">Поиск</Button> */}
+                <DataGrid rows={rows} columns={columns} slots={{footer: Footer}} slotProps={{footer: footerCount}} hideFooterPagination={false}/>
             </div>
-            <DataGrid rows={rows} columns={columns} slots={{footer: Footer}} slotProps={{footer: footerCount}} hideFooterPagination={false}/>
         </div>);
 }

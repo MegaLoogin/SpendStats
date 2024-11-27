@@ -3,8 +3,10 @@ import { useEffect, useState } from "react";
 import dayjs from 'dayjs';
 import axios from "axios";
 import { BasicDatePicker, SelectInput, SimpleBackdrop } from "./Components.js";
+import { useNavigate } from "react-router-dom";
+import { LOCAL_KEY } from "./App.js";
 
-const TIMEZONE = "Europe/Moscow";
+const TIMEZONE = "Europe/London";
 
 let offersSend = {};
 
@@ -32,6 +34,7 @@ export function SendForm(){
 
     const [buttonDisabled, setButtonDisabled] = useState(true);
 
+    const navigate = useNavigate();
 
     async function onUserSelect(value){
         setOffersSections([]);
@@ -53,7 +56,6 @@ export function SendForm(){
     async function onSend(){
         setLoading(true);
         for(let id of Object.keys(offersSend)){
-            console.log(id);
             await offersSend[id]();
         }
         setLoading(false);
@@ -95,7 +97,6 @@ export function SendForm(){
         const onOfferDateSelect = async (value, dateValue) => { }
 
         async function send() {
-            console.log(offer, geo, spend, 1);
             if(offer == "" || geo == "" || spend == "") {
                 setHelperError(true);
                 setHelper("Ошибка: заполните поля");
@@ -103,7 +104,7 @@ export function SendForm(){
             }
             const selectedOffer = offersData.find(v => v.id == offer);
 
-            const res = (await api.post("addData", {offerData: selectedOffer, data: clicksData, buyerName: name[1], spend: spend, date: date.toISOString().split("T")[0]})).data;
+            const res = (await api.post("addData", {offerData: selectedOffer, data: clicksData, buyerName: name[1], spend: spend, date: date.format("YYYY-MM-DD")})).data;
 
             setHelperError(res.status == "error");
             setHelper(res.status == "error" ? "Ошибка: " + res.message : "Отправлено");
@@ -160,16 +161,19 @@ export function SendForm(){
     }
 
     return (
-    <div style={{justifyContent: "center", display: "flex", backgroundColor: "#f3f0e7", margin: "10px", padding: "10px", height: "100%"}}>
-        <Box sx={{ minWidth: 350, maxWidth: 500 }} height={"min-content"} bgcolor={"white"} borderRadius={2} p={2} >
-            <SelectInput labelName="Ник баера" value={name} setValue={setName} callback={onUserSelect} array={users} required/><br/><br/>
-            {offersSections.map(v => v)}
-            <br/>
-            <div style={{display: "block", textAlign: "center"}}>
-                <Button id="addButton" variant="outlined" color="inherit" onClick={add} disabled={buttonDisabled}>+</Button><br/><br/>
-                <Button variant="outlined" color="inherit" onClick={onSend}>Отправить</Button>
+        <div>
+            <Button sx={{display: "block", backgroundColor: "white", margin: "5px", marginLeft: "9px"}} variant="outlined" color="inherit" onClick={() => navigate(`/${LOCAL_KEY}/stats`)}>Статистика</Button>
+            <div style={{justifyContent: "center", display: "flex", backgroundColor: "#f3f0e7", margin: "10px", padding: "10px", height: "100%"}}>
+                <Box sx={{ minWidth: 350, maxWidth: 500 }} height={"min-content"} bgcolor={"white"} borderRadius={2} p={2} >
+                    <SelectInput labelName="Ник баера" value={name} setValue={setName} callback={onUserSelect} array={users} required/><br/><br/>
+                    {offersSections.map(v => v)}
+                    <br/>
+                    <div style={{display: "block", textAlign: "center"}}>
+                        <Button id="addButton" variant="outlined" color="inherit" onClick={add} disabled={buttonDisabled}>+</Button><br/><br/>
+                        <Button variant="outlined" color="inherit" onClick={onSend}>Отправить</Button>
+                    </div>
+                </Box>
+                <SimpleBackdrop openState={loading}/>
             </div>
-        </Box>
-        <SimpleBackdrop openState={loading}/>
-    </div>);
+        </div>);
 }

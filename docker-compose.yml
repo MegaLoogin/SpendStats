@@ -12,6 +12,9 @@ services:
             - KT_DOMAIN=$KT_DOMAIN
             - LOCAL_KEY=$LOCAL_KEY
             - PUBLIC_KEY=$PUBLIC_KEY
+            - TGBOT_REMINDNER=$TGBOT_REMINDNER
+            - TGBOT_STATS=$TGBOT_STATS
+            - USERS_STATS=$USERS_STATS
             # - CHAT_ID=$CHAT_ID
         stdin_open: true
         tty: true

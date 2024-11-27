@@ -3,7 +3,7 @@ import { SendForm } from "./SendForm.js";
 import { Stats } from "./Stats.js";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-const LOCAL_KEY = "0066cec078e744518b28eefddd56ef08", PUBLIC_KEY = "657adc2660b848d7b53ffc029b9ea21d";
+export const LOCAL_KEY = "0066cec078e744518b28eefddd56ef08", PUBLIC_KEY = "657adc2660b848d7b53ffc029b9ea21d";
 
 function App() {
   return (

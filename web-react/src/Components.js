@@ -5,6 +5,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 export function SelectInput(props){
     const { labelName, value, setValue, array, required, callback, fullWidth = true } = props;
+    try{
     return (
     <FormControl fullWidth={fullWidth} required={required} style={{minWidth: "150px"}}>
         <InputLabel>{labelName}</InputLabel>
@@ -12,6 +13,10 @@ export function SelectInput(props){
             {array.map(v => <MenuItem key={v[0]} value={v[0]}>{v[1]}</MenuItem>)}
         </Select>
     </FormControl>);
+    }catch(e){
+        console.log(e);
+        window.location.reload();
+    }
 }
 
 export function SimpleBackdrop(props) {

@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { Button, TextField } from "@mui/material";
 import { BasicDatePicker, SelectInput } from "./Components.js";
 import { DataGrid } from '@mui/x-data-grid';
 import { useSearchParams } from "react-router-dom";
@@ -91,7 +90,7 @@ export function PublicStats(){
                 const allCount = { click: 0, lead: 0, sale: 0, spend: 0, revenue: 0, profit: 0};
 
                 data.forEach(v => {
-                    rowsTemp.push({ id: v.id, date: v.date.split("T")[0], click: v.click, lead: v.lead, sale: v.sale, spend: v.spend, revenue: round(v.revenue), profit: round(v.profit) });
+                    rowsTemp.push({ id: v.id, date: v.date.split("T")[0], click: v.click, lead: v.lead, sale: v.sale, spend: v.spend + " $", revenue: round(v.revenue) + " $", profit: round(v.profit) + " $" });
                     Object.keys(allCount).forEach(k => allCount[k] += v[k]);
                 });
 
@@ -125,7 +124,7 @@ export function PublicStats(){
     }, []);
 
     function Footer(props){
-        const row = [{ id: 0, date: "", click: props.click, lead: props.lead, sale: props.sale, spend: props.spend, revenue: props.revenue, profit: props.profit }]
+        const row = [{ id: 0, date: "", click: props.click, lead: props.lead, sale: props.sale, spend: props.spend ? props.spend + " $" : "", revenue: props.revenue ? props.revenue + " $" : "", profit: props.profit ? props.profit + " $" : "" }]
         return <div>
             <DataGrid rows={row} columns={columns} hideFooter columnHeaderHeight={0}/>
         </div>;

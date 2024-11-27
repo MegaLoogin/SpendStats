@@ -2,7 +2,8 @@ import cors from "cors";
 import express from "express";
 import { router } from "./router.js";
 import mongoose from "mongoose";
-import axios from "axios";
+import tgService from "./tg-service.js";
+import cron from "node-cron";
 
 const { MONGO_USER, MONGO_PASS, MONGO_DB } = process.env;
 
@@ -14,6 +15,8 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb'}));
 app.use(router);
+
+cron.schedule("0 12 * * *", tgService.resendBuyers);
 
 (async () => {
     await mongoose.connect(url);
