@@ -6,7 +6,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import { useSearchParams } from "react-router-dom";
 
 const api = axios.create({
-    "baseURL": "http://localhost/api/"
+    "baseURL": "/api/"
 });
 
 const intervals = [["yesterday", "Вчера", 1, 1], ["3_days", "3 дня", 3, 1], ["7_days", "7 дней", 7, 1], ["week", "Неделя", (dayjs().day() === 0 ? 6 : dayjs().day() - 1), 1], ["30_days", "30 дней", 30, 1], ["month", "Месяц", (dayjs().date() - 1), 1], ["all_time", "Все время", dayjs().diff(dayjs('1970-01-01'), 'days'), 1]];

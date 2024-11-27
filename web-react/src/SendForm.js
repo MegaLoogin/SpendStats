@@ -11,7 +11,7 @@ const TIMEZONE = "Europe/London";
 let offersSend = {};
 
 const api = axios.create({
-    "baseURL": "http://localhost/api/",
+    "baseURL": "/api/",
     maxBodyLength: 10000 * 1024,
     maxContentLength: 10000 * 1024
 });
