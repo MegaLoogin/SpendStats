@@ -170,7 +170,7 @@ class DBService {
             }
 
             const merged = this.mergeObjectsWithFilter(offersData, ["click", "lead", "sale", "spend", "revenue", "profit"]);
-            const result = Object.entries(merged).map(([date, value]) => {date = new Date(); return { id: date, date, ...value }});
+            const result = Object.entries(merged).map(([date, value]) => {date = new Date(date); return { id: date, date, ...value }});
             return result;
         }else{
             throw new Error(`Incorrect filter!`);
