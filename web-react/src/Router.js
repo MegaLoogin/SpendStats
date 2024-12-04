@@ -8,6 +8,7 @@ import { Button, Typography } from "@mui/material";
 import { observer } from "mobx-react";
 import LoginForm from "./LoginForm";
 import MainPage from "./MainPage";
+import { GlobalStats } from "./GlobalStats";
 
 const PrivateRoute = observer(function (props){
     const { permissionType, children } = props;
@@ -47,6 +48,7 @@ function Router(){
                     <Route path="/sendForm" element={<PrivateRoute permissionType={["admin", "buyer"]}><SendForm/></PrivateRoute>}/>
                     <Route path="/stats" element={<PrivateRoute permissionType={["admin", "buyer"]}><Stats/></PrivateRoute>}/>
                     <Route path="/publicStats" element={<PrivateRoute permissionType={["admin", "aff"]}><PublicStats/></PrivateRoute>}/>
+                    <Route path="/globalStats" element={<PrivateRoute permissionType={["admin"]}><GlobalStats/></PrivateRoute>}/>
                 </Route>
             </Routes>
         </BrowserRouter>

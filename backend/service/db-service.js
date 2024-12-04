@@ -147,8 +147,6 @@ class DBService {
     async getDataByFilter(filter, username, userType){
         const { dateStart, dateEnd, offerId, userId, geo, offerName } = filter;
 
-        console.log()
-
         if(offerId && userId){
             const offer = await offerModel.findById(offerId);
             if(!offer) throw new Error(`Offer ${offerId} not found!`);
@@ -185,7 +183,23 @@ class DBService {
             const result = Object.entries(merged).map(([date, value]) => {date = new Date(date); return { id: date, date, ...value }});
             return result;
         }else{
-            throw new Error(`Incorrect filter!`);
+            // throw new Error(`Incorrect filter!`);
+            if(userType !== "admin") throw ApiError.PermissionError();
+
+            const offers = await offerModel.find({});
+
+            const offersData = [];
+
+            for(let offer of offers){
+                /** @type {Model} */
+                const data = await models[offer.idName];
+                const result = await data.find({date: { $gte: dateStart, $lte: dateEnd }}, "-data", {sort: {date: -1}});
+                offersData.push(this.arrayToObject(result, "date"));
+            }
+
+            const merged = this.mergeObjectsWithFilter(offersData, ["click", "lead", "sale", "spend", "revenue", "profit"]);
+            const result = Object.entries(merged).map(([date, value]) => {date = new Date(date); return { id: date, date, ...value }});
+            return result;
         }
     }
 
