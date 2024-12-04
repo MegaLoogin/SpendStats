@@ -5,16 +5,17 @@ import axios from "axios";
 import { BasicDatePicker, SelectInput, SimpleBackdrop } from "./Components.js";
 import { useNavigate } from "react-router-dom";
 import { LOCAL_KEY } from "./App.js";
+import { api } from "./service/api.js";
 
 const TIMEZONE = "Europe/London";
 
 let offersSend = {};
 
-const api = axios.create({
-    "baseURL": "/api/",
-    maxBodyLength: 10000 * 1024,
-    maxContentLength: 10000 * 1024
-});
+// const api = axios.create({
+//     "baseURL": "http://localhost/api/",
+//     maxBodyLength: 10000 * 1024,
+//     maxContentLength: 10000 * 1024
+// });
 
 // Установка глобальных настроек для всех запросов
 axios.defaults.maxContentLength = 10000000; // 10MB
@@ -162,7 +163,10 @@ export function SendForm(){
 
     return (
         <div>
-            <Button sx={{display: "block", backgroundColor: "white", margin: "5px", marginLeft: "9px"}} variant="outlined" color="inherit" onClick={() => navigate(`/${LOCAL_KEY}/stats`)}>Статистика</Button>
+            <div>
+                <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "9px"}} variant="outlined" color="inherit" onClick={() => navigate(`/stats`)}>Статистика</Button>
+                <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "9px"}} variant="outlined" color="inherit" onClick={() => navigate(`/`)}>Меню</Button>
+            </div>
             <div style={{justifyContent: "center", display: "flex", backgroundColor: "#f3f0e7", margin: "10px", padding: "10px", height: "100%"}}>
                 <Box sx={{ minWidth: 350, maxWidth: 500 }} height={"min-content"} bgcolor={"white"} borderRadius={2} p={2} >
                     <SelectInput labelName="Ник баера" value={name} setValue={setName} callback={onUserSelect} array={users} required/><br/><br/>

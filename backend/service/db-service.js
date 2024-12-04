@@ -1,16 +1,20 @@
 import { Model } from "mongoose";
-import models, { createModel } from "./models/data-model.js";
-import offerModel from "./models/offer-model.js";
-import userModel from "./models/user-model.js";
+import models, { createModel } from "../models/data-model.js";
+import offerModel from "../models/offer-model.js";
+import userModel from "../models/user-model.js";
+import bcrypt from 'bcrypt';
+import { ApiError } from "../middle/error.js";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
 // const localDate = (date) => date ? new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' }) : new Date().toLocaleString('en-CA', { timeZone: 'Europe/Moscow' });
 
 class DBService {
-    async addUser(username, tgId){
+    async addUser(username, password, tgId, type){
         try{
-            const user = await userModel.create({name: username, tgId});
+            const hash = await bcrypt.hash(password.toString(), 3);
+            const user = await userModel.create({username, password: hash, tgId, type});
+            // const user = await userModel.create({username, tgId});
             await user.save();
             return user;
         }catch(e){
@@ -32,7 +36,7 @@ class DBService {
 
     async linkUserToOffer(username, offerId){
         try{
-            const user = await userModel.findOne({name: username});
+            const user = await userModel.findOne({username});
             const offer = await offerModel.findOne({idName: offerId});
 
             user.offers[offerId] = {
@@ -60,12 +64,12 @@ class DBService {
 
     async addDataToOffer(offerData, username, date, data, spend){
         spend = parseFloat(spend);
-        let user = await userModel.findOne({name: username});
+        let user = await userModel.findOne({username});
         let offer = await offerModel.findOne({idName: offerData.id});
 
         let needLink = (!user) || (!offer);
 
-        if(!user) user = await this.addUser(username, 0);
+        if(!user) user = await this.addUser(username, username, 0, "buyer");
 
         if(!offer) offer = await this.addOffer(offerData.id, offerData.name, offerData.name.split("|")[2].trim("").toLowerCase(), offerData.country, (new Date()).toISOString(), offerData.payout_auto);
 
@@ -103,14 +107,19 @@ class DBService {
         return offers;
     }
 
-    async getUsers(){
+    async getUsers(username){
         BigInt.prototype.toJSON = function () {
             const int = Number.parseInt(this.toString());
             return int ?? this.toString();
         };
 
-        const users = await userModel.find({});
-        return users;
+        if(!username){
+            const users = await userModel.find({});
+            return users;
+        }else{
+            const users = await userModel.find({username});
+            return users;
+        }
     }
 
     arrayToObject = (arr, key) =>
@@ -135,8 +144,10 @@ class DBService {
     };
       
 
-    async getDataByFilter(filter){
+    async getDataByFilter(filter, username, userType){
         const { dateStart, dateEnd, offerId, userId, geo, offerName } = filter;
+
+        console.log()
 
         if(offerId && userId){
             const offer = await offerModel.findById(offerId);
@@ -144,19 +155,20 @@ class DBService {
 
             const user = await userModel.findById(userId);
             if(!user) throw new Error(`User ${userId} not found!`);
+            if((user.username !== username || userType === "aff") && (userType !== "admin")) throw ApiError.PermissionError();
 
             /** @type {Model} */
             const data = await models[offer.idName];
             const result = await data.find({user: user.id, date: { $gte: dateStart, $lte: dateEnd }}, "-data", {sort: {date: -1}});
             return result;
-        }else if(offerId){
-            const offer = await offerModel.findById(offerId);
-            if(!offer) throw new Error(`Offer ${offerId} not found!`);
+        // }else if(offerId){
+        //     const offer = await offerModel.findById(offerId);
+        //     if(!offer) throw new Error(`Offer ${offerId} not found!`);
 
-            /** @type {Model} */
-            const data = await models[offer.idName];
-            const result = await data.find({date: { $gte: dateStart, $lte: dateEnd }}, "-data", {sort: {date: -1}});
-            return result;
+        //     /** @type {Model} */
+        //     const data = await models[offer.idName];
+        //     const result = await data.find({date: { $gte: dateStart, $lte: dateEnd }}, "-data", {sort: {date: -1}});
+        //     return result;
         }else if(geo && offerName){
             const offers = await offerModel.find({name: offerName, geo: {$in: [geo]}});
 

@@ -1,4 +1,4 @@
-import mongoose, { model, Schema } from "mongoose";
+import { model, Schema } from "mongoose";
 
 export const OfferSchema = new Schema({
     idName: {type: Number, unique: true},

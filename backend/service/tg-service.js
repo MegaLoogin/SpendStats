@@ -1,5 +1,5 @@
-import offerModel from "./models/offer-model.js";
-import userModel from "./models/user-model.js";
+import offerModel from "../models/offer-model.js";
+import userModel from "../models/user-model.js";
 import axios from "axios";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;

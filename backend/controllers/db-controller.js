@@ -1,4 +1,5 @@
-import dbService from "./db-service.js";
+import { getTokenData } from "../middle/auth.js";
+import dbService from "../service/db-service.js";
 
 class DBController {
     async addData(req, res){
@@ -24,8 +25,12 @@ class DBController {
     }
 
     async getUsers(req, res){
+        const tokenData = getTokenData(req);
+        let username = tokenData.username;
+        if(tokenData.type === "admin") username = null;
+
         try{
-            res.json({"status": "ok", "data": await dbService.getUsers()});
+            res.json({"status": "ok", "data": await dbService.getUsers(username)});
         }catch(e){
             console.log(e);
             res.json({"status": "error", "text": e.message});
@@ -43,10 +48,12 @@ class DBController {
     }
 
     async getDataByFilter(req, res){
+        const tokenData = getTokenData(req);
+        console.log(tokenData);
         try{
             const filter = req.body;
 
-            res.json({"status": "ok", "data": await dbService.getDataByFilter(filter)});
+            res.json({"status": "ok", "data": await dbService.getDataByFilter(filter, tokenData.username, tokenData.type)});
         }catch(e){
             console.log(e);
             res.json({"status": "error", "text": e.message});

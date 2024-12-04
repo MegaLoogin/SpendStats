@@ -1,15 +1,10 @@
-import axios from "axios";
+import { api } from "./service/api.js";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { BasicDatePicker, SelectInput } from "./Components.js";
 import { DataGrid } from '@mui/x-data-grid';
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@mui/material";
-import { LOCAL_KEY } from "./App.js";
-
-const api = axios.create({
-    "baseURL": "/api/"
-});
 
 const intervals = [["yesterday", "Вчера", 1, 1], ["3_days", "3 дня", 3, 1], ["7_days", "7 дней", 7, 1], ["week", "Неделя", (dayjs().day() === 0 ? 6 : dayjs().day() - 1), 1], ["30_days", "30 дней", 30, 1], ["month", "Месяц", (dayjs().date() - 1), 1], ["all_time", "Все время", dayjs().diff(dayjs('1970-01-01'), 'days'), 1]];
 
@@ -44,7 +39,31 @@ export function Stats(){
 
     async function onUserSelect(value) {
         const data = (await api.post("getOffersByUser", {userId: value})).data.data;
-        setOffers(data.map(v => [v._id, v.title]));
+        const userOffers = data.map(v => [v._id, v.title]);
+        setOffers(userOffers);
+        setOffer("");
+
+        const rowsTemp = [];
+        const allCount = { click: 0, lead: 0, sale: 0, spend: 0, revenue: 0, profit: 0};
+
+        for(let offer of userOffers){
+            const offerData = (await api.post("/getDataByFilter", { dateStart: dateStart.format("YYYY-MM-DD"), dateEnd: dateEnd.format("YYYY-MM-DD"), offerId: offer[0], userId: value })).data.data;
+
+            if(offerData.length == 0) continue;
+
+            const offerDataOne = data.find((v) => v._id == offer[0])
+            rowsTemp.push({ id: offer[0], date: offerDataOne.name, click: (offerDataOne.isSpend ? "spend" : "cpa")});
+            offerData.forEach(v => {
+                rowsTemp.push({ id: v._id, date: v.date.split("T")[0], click: v.click, lead: v.lead, sale: v.sale, spend: v.spend + " $", revenue: round(v.revenue) + " $", profit: round(v.profit) + " $" });
+                Object.keys(allCount).forEach(k => allCount[k] += v[k]);
+            });
+
+            allCount.revenue = round(allCount.revenue);
+            allCount.profit = round(allCount.profit);
+        }
+
+        setFooterCount(allCount);
+        setRows(rowsTemp);
     }
 
     async function onOfferSelect(value) { }
@@ -65,28 +84,32 @@ export function Stats(){
 
     const round = v => Math.round(v * 100) / 100;
 
+    // useEffect(() => {
+    //     const intervalParam = searchParams.get("interval");
+    //     const nameParam = searchParams.get("name");
+    //     const offerParam = searchParams.get("offer");
+
+    //     if(intervalParam){
+    //         setInterval(intervalParam);
+    //         onIntervalSelect(intervalParam)
+    //     };
+
+    //     if(nameParam){
+    //         setName(nameParam);
+    //         onUserSelect(nameParam);
+    //     }
+    //     if(offerParam) setOffer(offerParam);
+    // }, [searchParams]);
+
     useEffect(() => {
-        const intervalParam = searchParams.get("interval");
-        const nameParam = searchParams.get("name");
-        const offerParam = searchParams.get("offer");
-
-        if(intervalParam){
-            setInterval(intervalParam);
-            onIntervalSelect(intervalParam)
-        };
-
-        if(nameParam){
-            setName(nameParam);
-            onUserSelect(nameParam);
-        }
-        if(offerParam) setOffer(offerParam);
-    }, [searchParams]);
-
-    useEffect(() => {
-        updateQueryParams(interval, name, offer);
+        // updateQueryParams(interval, name, offer);
 
         async function onChange(){
             try{
+                if(name && !offer){
+                    await onUserSelect(name);
+                    return;
+                }
                 if(!name || !offer) return;
                 const data = (await api.post("/getDataByFilter", { dateStart: dateStart.format("YYYY-MM-DD"), dateEnd: dateEnd.format("YYYY-MM-DD"), offerId: offer, userId: name })).data.data;
 
@@ -114,7 +137,7 @@ export function Stats(){
 
     useEffect(() => {
         async function start() {
-            setUsers((await api.get("getUsers")).data.data.map(v => [v._id, v.name]));
+            setUsers((await api.get("getUsers")).data.data.map(v => [v._id, v.username]));
         }
 
         start();
@@ -129,8 +152,11 @@ export function Stats(){
 
     return (
         <div>
-            <Button sx={{display: "block", backgroundColor: "white", margin: "5px", marginLeft: "9px"}} variant="outlined" color="inherit" onClick={() => navigate(`/${LOCAL_KEY}/sendForm`)}>Отправка</Button>
-            <div style={{margin: "0 auto", padding: "10px", borderRadius: "5px",backgroundColor: "white", justifyContent: "center", maxWidth: "720px"}}>
+            <div>
+                <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "9px"}} variant="outlined" color="inherit" onClick={() => navigate(`/sendForm`)}>Отправка</Button>
+                <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "9px"}} variant="outlined" color="inherit" onClick={() => navigate(`/`)}>Меню</Button>
+            </div>
+            <div style={{margin: "0 auto", padding: "10px", borderRadius: "5px", backgroundColor: "white", justifyContent: "center", maxWidth: "720px"}}>
                 <div style={{display: "block"}}>
                     <div style={{display: "flex"}}>
                         <BasicDatePicker label="Start" value={dateStart} setValue={setDateStart} callback={() => {}}/>

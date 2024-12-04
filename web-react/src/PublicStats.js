@@ -1,13 +1,9 @@
-import axios from "axios";
+import { api } from "./service/api.js";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { BasicDatePicker, SelectInput } from "./Components.js";
 import { DataGrid } from '@mui/x-data-grid';
 import { useSearchParams } from "react-router-dom";
-
-const api = axios.create({
-    "baseURL": "/api/"
-});
 
 const intervals = [["yesterday", "Вчера", 1, 1], ["3_days", "3 дня", 3, 1], ["7_days", "7 дней", 7, 1], ["week", "Неделя", (dayjs().day() === 0 ? 6 : dayjs().day() - 1), 1], ["30_days", "30 дней", 30, 1], ["month", "Месяц", (dayjs().date() - 1), 1], ["all_time", "Все время", dayjs().diff(dayjs('1970-01-01'), 'days'), 1]];
 
@@ -78,7 +74,7 @@ export function PublicStats(){
     }, [searchParams]);
 
     useEffect(() => {
-        updateQueryParams(interval, geo, offer);
+        // updateQueryParams(interval, geo, offer);
 
         async function onChange(){
             try{
@@ -131,7 +127,7 @@ export function PublicStats(){
     }
 
     return (
-        <div style={{margin: "0 auto", padding: "10px", borderRadius: "5px",backgroundColor: "white", justifyContent: "center", maxWidth: "720px"}}>
+        <div style={{margin: "0 auto", padding: "10px", borderRadius: "5px", backgroundColor: "white", justifyContent: "center", maxWidth: "720px"}}>
             <div style={{display: "block"}}>
                 <div style={{display: "flex"}}>
                     <BasicDatePicker label="Start" value={dateStart} setValue={setDateStart} callback={() => {}}/>

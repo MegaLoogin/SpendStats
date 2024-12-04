@@ -1,9 +1,11 @@
-import mongoose, { model, Schema } from "mongoose";
+import { model, Schema } from "mongoose";
 
 export const UserSchema = new Schema({
-    name: {type: String, unique: true},
+    username: {type: String, unique: true},
     tgId: {type: Schema.Types.BigInt},
-    offers: {type: Object, default: {}}
+    password: {type: String, requried: true},
+    offers: {type: Object, default: {}},
+    type: {type: String, default: "aff"}
 }, {versionKey: false});
 
 export default model('User', UserSchema);
