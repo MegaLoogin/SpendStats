@@ -13,7 +13,8 @@ function MainPage(props){
         <RouteButton label="Публичная статистика" path="/publicStats"/><br/><br/>
         {["admin"].includes(type) ? <RouteButton label="Суммарная статистика" path="/globalStats"/> : null}<br/><br/>
         {["admin", "buyer"].includes(type) ? <RouteButton label="Локальная статистика" path="/stats"/> : null}<br/><br/>
-        {["admin", "buyer"].includes(type) ? <RouteButton label="Форма отправки" path="/sendForm"/> : null}
+        {["admin", "buyer"].includes(type) ? <RouteButton label="Форма отправки" path="/sendForm"/> : null}<br/><br/><br/>
+        {["admin"].includes(type) ? <RouteButton label="Регистрация" path="/register"/> : null}
     </div>
 }
 

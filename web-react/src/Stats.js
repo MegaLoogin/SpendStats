@@ -153,8 +153,8 @@ export function Stats(){
     return (
         <div>
             <div>
-                <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "9px"}} variant="outlined" color="inherit" onClick={() => navigate(`/sendForm`)}>Отправка</Button>
-                <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "9px"}} variant="outlined" color="inherit" onClick={() => navigate(`/`)}>Меню</Button>
+                <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "10px"}} variant="outlined" color="inherit" onClick={() => navigate(`/`)}>Меню</Button>
+                <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "10px"}} variant="outlined" color="inherit" onClick={() => navigate(`/sendForm`)}>Отправка</Button>
             </div>
             <div style={{margin: "0 auto", padding: "10px", borderRadius: "5px", backgroundColor: "white", justifyContent: "center", maxWidth: "720px"}}>
                 <div style={{display: "block"}}>

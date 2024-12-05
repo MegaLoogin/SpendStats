@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { BasicDatePicker, SelectInput } from "./Components.js";
 import { DataGrid } from '@mui/x-data-grid';
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Button } from "@mui/material";
 
 const intervals = [["yesterday", "Вчера", 1, 1], ["3_days", "3 дня", 3, 1], ["7_days", "7 дней", 7, 1], ["week", "Неделя", (dayjs().day() === 0 ? 6 : dayjs().day() - 1), 1], ["30_days", "30 дней", 30, 1], ["month", "Месяц", (dayjs().date() - 1), 1], ["all_time", "Все время", dayjs().diff(dayjs('1970-01-01'), 'days'), 1]];
 
@@ -35,6 +36,8 @@ export function GlobalStats(){
     const [ searchParams, setSearchParams ] = useSearchParams();
 
     const [ g, setG ] = useState({});
+
+    const navigate = useNavigate();
 
     async function onOfferSelect(value) {
         setGeos(g[value]);
@@ -127,17 +130,17 @@ export function GlobalStats(){
     }
 
     return (
-        <div style={{margin: "0 auto", padding: "10px", borderRadius: "5px", backgroundColor: "white", justifyContent: "center", maxWidth: "720px"}}>
-            <div style={{display: "block"}}>
-                <div style={{display: "flex"}}>
-                    <BasicDatePicker label="Start" value={dateStart} setValue={setDateStart} callback={() => {}}/>
-                    <BasicDatePicker label="End" value={dateEnd} setValue={setDateEnd} callback={() => {}}/>
-                    <div style={{marginTop: "8px"}}><SelectInput label="Интервал" value={interval} setValue={setInterval} array={intervals} fullWidth={false} callback={onIntervalSelect}></SelectInput></div>
+        <div>
+            <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "10px"}} variant="outlined" color="inherit" onClick={() => navigate(`/`)}>Меню</Button>
+            <div style={{margin: "0 auto", padding: "10px", borderRadius: "5px", backgroundColor: "white", justifyContent: "center", maxWidth: "720px"}}>
+                <div style={{display: "block"}}>
+                    <div style={{display: "flex"}}>
+                        <BasicDatePicker label="Start" value={dateStart} setValue={setDateStart} callback={() => {}}/>
+                        <BasicDatePicker label="End" value={dateEnd} setValue={setDateEnd} callback={() => {}}/>
+                        <div style={{marginTop: "8px"}}><SelectInput label="Интервал" value={interval} setValue={setInterval} array={intervals} fullWidth={false} callback={onIntervalSelect}></SelectInput></div>
+                    </div>
                 </div>
-                {/* <SelectInput label="Оффер" value={offer} setValue={setOffer} array={offers} fullWidth={false} callback={onOfferSelect}/>
-                <SelectInput label="Гео" value={geo} setValue={setGeo} array={geos} fullWidth={false} callback={(v) => {}}/> */}
-                {/* <Button variant="outlined" style={{margin: "10px"}} color="inherit">Поиск</Button> */}
+                <DataGrid rows={rows} columns={columns} slots={{footer: Footer}} slotProps={{footer: footerCount}} hideFooterPagination={false}/>
             </div>
-            <DataGrid rows={rows} columns={columns} slots={{footer: Footer}} slotProps={{footer: footerCount}} hideFooterPagination={false}/>
         </div>);
 }

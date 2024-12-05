@@ -9,6 +9,7 @@ import { observer } from "mobx-react";
 import LoginForm from "./LoginForm";
 import MainPage from "./MainPage";
 import { GlobalStats } from "./GlobalStats";
+import RegForm from "./RegForm";
 
 const PrivateRoute = observer(function (props){
     const { permissionType, children } = props;
@@ -49,6 +50,7 @@ function Router(){
                     <Route path="/stats" element={<PrivateRoute permissionType={["admin", "buyer"]}><Stats/></PrivateRoute>}/>
                     <Route path="/publicStats" element={<PrivateRoute permissionType={["admin", "aff"]}><PublicStats/></PrivateRoute>}/>
                     <Route path="/globalStats" element={<PrivateRoute permissionType={["admin"]}><GlobalStats/></PrivateRoute>}/>
+                    <Route path="/register" element={<PrivateRoute permissionType={["admin"]}><RegForm/></PrivateRoute>}/>
                 </Route>
             </Routes>
         </BrowserRouter>

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = `http://localhost/api`;
+const API_URL = `/api`;
 
 export const api = axios.create({
     baseURL: API_URL,
@@ -21,12 +21,13 @@ api.interceptors.response.use(config => {
     if(error.response?.status === 401 && error.config && !error.config._isRetry) { 
         originalRequest._isRetry = true;
         try{
-            // const response = await axios.post(`${API_URL}/refresh`, {}, {withCredentials: true});
-            const response = await api.get('/refresh');
+            const response = await axios.get(`${API_URL}/refresh`, {}, {withCredentials: true});
+            // const response = await api.get('/refresh');
             localStorage.setItem('token', response.data.accessToken);
             return api.request(originalRequest);
         }catch(e){
             console.log(e);
+            window.location.href = "/login";
         }
     }
     throw error;

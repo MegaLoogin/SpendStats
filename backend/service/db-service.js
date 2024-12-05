@@ -43,7 +43,15 @@ class DBService {
                 offerId: offer.id,
                 lastDate: new Date()
             };
+            // await user.set(`offers[${offerId}]`, {offerId: offer.id,
+            //     lastDate: new Date()});
+            // console.log(await user.updateOne({$set: {[`offers[${offerId}]`]: {
+            //     offerId: offer.id,
+            //     lastDate: new Date()
+            // }}}));
             offer.users.push(user.id);
+
+            // console.log(user.offers);
 
             await user.save();
             await offer.save();
@@ -54,6 +62,7 @@ class DBService {
 
     async updateOfferLastDate(user, offerIdName){
         try{
+            // user.offers[offerIdName] = {};
             user.offers[offerIdName].lastDate = new Date();
             user.markModified('offers');
             await user.save();
