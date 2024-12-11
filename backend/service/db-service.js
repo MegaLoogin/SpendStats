@@ -111,13 +111,13 @@ class DBService {
             await this.updateOfferLastDate(user, offer.idName);
     }
 
-    async getOffers(username){
-        if(!username){
+    async getOffers(allowedOffers){
+        if(!allowedOffers){
             const offers = await offerModel.find({});
             return offers;
         }else{
-            const filter = new RegExp("^" + username);
-            const offers = await offerModel.find({name: filter});
+            // const filter = new RegExp("^" + username);
+            const offers = await offerModel.find({name: { $in: allowedOffers }});
             return offers;
         }
     }

@@ -33,7 +33,7 @@ class UserService{
         if(!isPass) throw ApiError.BadRequest("Incorrect password");
 
         const session = await tokenService.saveToken(user._id);
-        const tokens = tokenService.generateTokens({username: user.username, id: user._id, session, type: user.type});
+        const tokens = tokenService.generateTokens({username: user.username, id: user._id, session, type: user.type, allowedOffers: user.allowedOffers});
         await tokenService.saveToken(user._id, tokens.refreshToken, session);
 
         return {...tokens, session, user: {username: user.username, type: user.type}};
@@ -52,7 +52,7 @@ class UserService{
 
         if(!userData || !tokenFromDb) throw ApiError.UnauthorizedError();
 
-        const tokens = tokenService.generateTokens({username: userData.username, id: userData.id, session: userData.session, type: userData.type});
+        const tokens = tokenService.generateTokens({username: userData.username, id: userData.id, session: userData.session, type: userData.type, allowedOffers: userData.allowedOffers});
         await tokenService.saveToken(userData.id, tokens.refreshToken, userData.session);
 
         return {...tokens, session: userData.session, user: {username: userData.username, type: userData.type}};
