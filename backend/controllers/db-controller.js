@@ -16,8 +16,12 @@ class DBController {
     }
 
     async getOffers(req, res){
+        const tokenData = getTokenData(req);
+        let username = tokenData.username;
+        if(tokenData.type !== "aff") username = null;
+
         try{
-            res.json({"status": "ok", "data": await dbService.getOffers()});
+            res.json({"status": "ok", "data": await dbService.getOffers(username)});
         }catch(e){
             console.log(e);
             res.json({"status": "error", "text": e.message});
