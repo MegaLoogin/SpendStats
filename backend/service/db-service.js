@@ -4,6 +4,7 @@ import offerModel from "../models/offer-model.js";
 import userModel from "../models/user-model.js";
 import bcrypt from 'bcrypt';
 import { ApiError } from "../middle/error.js";
+import tgService from "./tg-service.js";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -105,7 +106,9 @@ class DBService {
 
         profit = revenue - spend;
 
-        (await offerDataModel.create({user: user.id, spend, profit, revenue, click, lead, sale, date})).save();
+        const dataOne = (await offerDataModel.create({user: user.id, spend, profit, revenue, click, lead, sale, date}));
+
+        await tgService.resendSpend(offerData, dataOne);
 
         if( (new Date()) - (new Date(date)) < ONE_DAY )
             await this.updateOfferLastDate(user, offer.idName);
