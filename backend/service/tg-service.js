@@ -35,14 +35,14 @@ class TGService{
     async resendSpend(offerData, dataOne){
         const msgTextTitle = (new Date(dataOne.date)).toLocaleDateString("ru-RU", {minimize: true}) + "\n" + "#" + offerData.id + " " + offerData.name + "\n";
         const msgText1 = createTextTable(["click", "lead", "sale"], [[dataOne.click, dataOne.lead, dataOne.sale]]);
-        const msgText2 = createTextTable(["spend", "revenue", "profit"], [[dataOne.spend + "$", dataOne.revenue + "$", dataOne.profit + "$"]]);
+        const msgText2 = createTextTable(["spend", "revenue", "profit"], [[dataOne.spend.toFixed(2) + "$", dataOne.revenue.toFixed(2) + "$", dataOne.profit.toFixed(2) + "$"]]);
 
         const dateFilter = {dateStart: getFormattedYesterday(), dateEnd: getFormattedYesterday()};
 
         const summaryData = (await dbService.getDataByFilter(dateFilter, "", "admin"))[0];
 
         const msgTextSummary1 = createTextTable(["click", "lead", "sale"], [[summaryData.click, summaryData.lead, summaryData.sale]]);
-        const msgTextSummary2 = createTextTable(["spend", "revenue", "profit"], [[summaryData.spend + "$", summaryData.revenue + "$", summaryData.profit + "$"]]);
+        const msgTextSummary2 = createTextTable(["spend", "revenue", "profit"], [[summaryData.spend.toFixed(2) + "$", summaryData.revenue.toFixed(2) + "$", summaryData.profit.toFixed(2) + "$"]]);
 
         console.log(summaryData, dateFilter);
 
