@@ -22,6 +22,7 @@ app.use(express.json({ limit: '10mb'}));
 app.use(router);
 
 cron.schedule("0 12 * * *", tgService.resendBuyers);
+cron.schedule("0 10 * * *", tgService.resendTotal);
 
 (async () => {
     await mongoose.connect(url);

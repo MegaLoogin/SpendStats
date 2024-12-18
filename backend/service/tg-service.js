@@ -9,6 +9,7 @@ const tgApiRemind = axios.create({ baseURL: `https://api.telegram.org/bot${proce
 const tgApiStat = axios.create({ baseURL: `https://api.telegram.org/bot${process.env.TGBOT_STATS}`});
 
 const USERS_STATS = process.env.USERS_STATS.split(',');
+const TOTAL_STATS = process.env.TOTAL_STATS.split(',');
 
 class TGService{
     async resendBuyers(){
@@ -32,6 +33,27 @@ class TGService{
         }
     }
 
+    async resendTotal(){
+        const dateFilter = {dateStart: getFormattedYesterday(), dateEnd: getFormattedYesterday()};
+        const summaryData = (await dbService.getDataByFilter(dateFilter, "", "admin"))[0];
+
+        const msgTextSummary1 = createTextTable(["click", "lead", "sale"], [[summaryData.click, summaryData.lead, summaryData.sale]]);
+        const msgTextSummary2 = createTextTable(["spend", "revenue", "profit"], [[summaryData.spend.toFixed(2) + "$", summaryData.revenue.toFixed(2) + "$", summaryData.profit.toFixed(2) + "$"]]);
+
+        for(let user of TOTAL_STATS){
+            try{
+                const res = await tgApiStat.post("sendMessage", {
+                    chat_id: user,
+                    text: `\`\`\`Суммарно за ${dateFilter.dateEnd.split('-').reverse().join('.')}:\n\n${msgTextSummary1}\n\n${msgTextSummary2}\`\`\``,
+                    parse_mode: "MarkdownV2"
+                });
+                // console.log(res.data);
+            }catch(e){
+                // console.log(e);
+            }
+        }
+    }
+
     async resendSpend(offerData, dataOne){
         const msgTextTitle = (new Date(dataOne.date)).toLocaleDateString("ru-RU", {minimize: true}) + "\n" + "#" + offerData.id + " " + offerData.name + "\n";
         const msgText1 = createTextTable(["click", "lead", "sale"], [[dataOne.click, dataOne.lead, dataOne.sale]]);
@@ -43,8 +65,6 @@ class TGService{
 
         const msgTextSummary1 = createTextTable(["click", "lead", "sale"], [[summaryData.click, summaryData.lead, summaryData.sale]]);
         const msgTextSummary2 = createTextTable(["spend", "revenue", "profit"], [[summaryData.spend.toFixed(2) + "$", summaryData.revenue.toFixed(2) + "$", summaryData.profit.toFixed(2) + "$"]]);
-
-        console.log(summaryData, dateFilter);
 
         for(let user of USERS_STATS){
             try{

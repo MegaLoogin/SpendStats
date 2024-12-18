@@ -15,6 +15,7 @@ services:
             - TGBOT_REMINDNER=$TGBOT_REMINDNER
             - TGBOT_STATS=$TGBOT_STATS
             - USERS_STATS=$USERS_STATS
+            - TOTAL_STATS=$TOTAL_STATS
             - SECRET_KEY=$SECRET_KEY
             # - CHAT_ID=$CHAT_ID
         stdin_open: true
