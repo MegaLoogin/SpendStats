@@ -26,7 +26,7 @@ class TGService{
                         });
                         // console.log(res.data);
                     }catch(e){
-                        console.log(e);
+                        // console.log(e);
                     }
                 }
             }
@@ -49,7 +49,7 @@ class TGService{
                 });
                 // console.log(res.data);
             }catch(e){
-                // console.log(e);
+                console.log(e);
             }
         }
     }
@@ -75,7 +75,7 @@ class TGService{
                 });
                 // console.log(res.data);
             }catch(e){
-                // console.log(e);
+                console.log(e);
             }
         }
     }
