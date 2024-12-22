@@ -34,23 +34,27 @@ class TGService{
     }
 
     async resendTotal(){
-        const dateFilter = {dateStart: getFormattedYesterday(), dateEnd: getFormattedYesterday()};
-        const summaryData = (await dbService.getDataByFilter(dateFilter, "", "admin"))[0];
+        try{
+            const dateFilter = {dateStart: getFormattedYesterday(), dateEnd: getFormattedYesterday()};
+            const summaryData = (await dbService.getDataByFilter(dateFilter, "", "admin"))[0];
 
-        const msgTextSummary1 = createTextTable(["click", "lead", "sale"], [[summaryData.click, summaryData.lead, summaryData.sale]]);
-        const msgTextSummary2 = createTextTable(["spend", "revenue", "profit"], [[summaryData.spend.toFixed(2) + "$", summaryData.revenue.toFixed(2) + "$", summaryData.profit.toFixed(2) + "$"]]);
+            const msgTextSummary1 = createTextTable(["click", "lead", "sale"], [[summaryData.click, summaryData.lead, summaryData.sale]]);
+            const msgTextSummary2 = createTextTable(["spend", "revenue", "profit"], [[summaryData.spend.toFixed(2) + "$", summaryData.revenue.toFixed(2) + "$", summaryData.profit.toFixed(2) + "$"]]);
 
-        for(let user of TOTAL_STATS){
-            try{
-                const res = await tgApiStat.post("sendMessage", {
-                    chat_id: user,
-                    text: `\`\`\`Суммарно за ${dateFilter.dateEnd.split('-').reverse().join('.')}:\n\n${msgTextSummary1}\n\n${msgTextSummary2}\`\`\``,
-                    parse_mode: "MarkdownV2"
-                });
-                // console.log(res.data);
-            }catch(e){
-                console.log(e);
+            for(let user of TOTAL_STATS){
+                try{
+                    const res = await tgApiStat.post("sendMessage", {
+                        chat_id: user,
+                        text: `\`\`\`Суммарно за ${dateFilter.dateEnd.split('-').reverse().join('.')}:\n\n${msgTextSummary1}\n\n${msgTextSummary2}\`\`\``,
+                        parse_mode: "MarkdownV2"
+                    });
+                    // console.log(res.data);
+                }catch(e){
+                    console.log(e);
+                }
             }
+        }catch(e){
+            console.log(e);
         }
     }
 
