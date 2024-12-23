@@ -23,4 +23,4 @@ router.post("/getOffersByUser", auth, dbController.getOffersByUser);
 router.get("/getUsers", auth, dbController.getUsers);
 router.post("/getDataByFilter", auth, dbController.getDataByFilter);
 
-router.get('/testResend', tgService.resendTotal);
+router.get('/getTotal', (req, res) => { tgService.resendTotal(); res.send(200); });
