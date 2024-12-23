@@ -38,6 +38,8 @@ class TGService{
             const dateFilter = {dateStart: getFormattedYesterday(), dateEnd: getFormattedYesterday()};
             const summaryData = (await dbService.getDataByFilter(dateFilter, "", "admin"))[0];
 
+            console.log(summaryData, await dbService.getDataByFilter(dateFilter, "", "admin"), dateFilter);
+
             const msgTextSummary1 = createTextTable(["click", "lead", "sale"], [[summaryData.click, summaryData.lead, summaryData.sale]]);
             const msgTextSummary2 = createTextTable(["spend", "revenue", "profit"], [[summaryData.spend.toFixed(2) + "$", summaryData.revenue.toFixed(2) + "$", summaryData.profit.toFixed(2) + "$"]]);
 
