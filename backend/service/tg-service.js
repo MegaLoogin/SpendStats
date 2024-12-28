@@ -62,15 +62,15 @@ class TGService{
 
     async resendSpend(offerData, dataOne){
         const msgTextTitle = (new Date(dataOne.date)).toLocaleDateString("ru-RU", {minimize: true}) + "\n" + "#" + offerData.id + " " + offerData.name + "\n";
-        const msgText1 = createTextTable(["click", "lead", "sale"], [[dataOne.click, dataOne.lead, dataOne.sale]]);
-        const msgText2 = createTextTable(["spend", "revenue", "profit"], [[dataOne.spend.toFixed(2) + "$", dataOne.revenue.toFixed(2) + "$", dataOne.profit.toFixed(2) + "$"]]);
+        const msgText1 = createTextTable(["click", "lead", "sale"], [[dataOne.click ?? 0, dataOne.lead ?? 0, dataOne.sale ?? 0]]);
+        const msgText2 = createTextTable(["spend", "revenue", "profit"], [[(dataOne.spend ?? 0).toFixed(2) + "$", (dataOne.revenue ?? 0).toFixed(2) + "$", (dataOne.profit ?? 0).toFixed(2) + "$"]]);
 
         const dateFilter = {dateStart: getFormattedYesterday(), dateEnd: getFormattedYesterday()};
 
         const summaryData = (await dbService.getDataByFilter(dateFilter, "", "admin"))[0];
 
-        const msgTextSummary1 = createTextTable(["click", "lead", "sale"], [[summaryData.click, summaryData.lead, summaryData.sale]]);
-        const msgTextSummary2 = createTextTable(["spend", "revenue", "profit"], [[summaryData.spend.toFixed(2) + "$", summaryData.revenue.toFixed(2) + "$", summaryData.profit.toFixed(2) + "$"]]);
+        const msgTextSummary1 = createTextTable(["click", "lead", "sale"], [[summaryData.click ?? 0, summaryData.lead ?? 0, summaryData.sale ?? 0]]);
+        const msgTextSummary2 = createTextTable(["spend", "revenue", "profit"], [[(summaryData.spend ?? 0).toFixed(2) + "$", (summaryData.revenue ?? 0).toFixed(2) + "$", (summaryData.profit ?? 0).toFixed(2) + "$"]]);
 
         for(let user of USERS_STATS){
             try{
