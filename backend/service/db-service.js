@@ -108,7 +108,7 @@ class DBService {
 
         const dataOne = (await offerDataModel.create({user: user.id, spend, profit, revenue, click, lead, sale, date}));
 
-        await tgService.resendSpend(offerData, dataOne);
+        // await tgService.resendSpend(offerData, dataOne);
 
         if( (new Date()) - (new Date(date)) < ONE_DAY )
             await this.updateOfferLastDate(user, offer.idName);
