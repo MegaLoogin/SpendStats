@@ -11,10 +11,10 @@ const ONE_DAY = 24 * 60 * 60 * 1000;
 // const localDate = (date) => date ? new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' }) : new Date().toLocaleString('en-CA', { timeZone: 'Europe/Moscow' });
 
 class DBService {
-    async addUser(username, password, tgId, type){
+    async addUser(username, password, tgId, type, btag = ""){
         try{
             const hash = await bcrypt.hash(password.toString(), 3);
-            const user = await userModel.create({username, password: hash, tgId, type});
+            const user = await userModel.create({username, password: hash, tgId, type, btag});
             // const user = await userModel.create({username, tgId});
             await user.save();
             return user;

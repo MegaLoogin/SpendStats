@@ -6,7 +6,8 @@ export const UserSchema = new Schema({
     password: {type: String, requried: true},
     offers: {type: Object, default: {}},
     type: {type: String, default: "aff"},
-    allowedOffers: {type: [String], default: null}
+    allowedOffers: {type: [String], default: null},
+    btag: {type: String, default: ""}
 }, {versionKey: false});
 
 export default model('User', UserSchema);

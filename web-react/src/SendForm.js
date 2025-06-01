@@ -42,7 +42,8 @@ axios.defaults.maxContentLength = 10000000; // 10MB
 axios.defaults.maxBodyLength = 10000000; // 10MB
 
 export function SendForm(){
-    const { type, username } = useContext(Context).store.user;
+    const { type, username, btag } = useContext(Context).store.user;
+    console.log('Current user btag:', btag, type, username);
     const [name, setName] = useState('');
     const [users, setUsers] = useState([]);
     const [geosData, setGeosData] = useState([]);
@@ -84,13 +85,19 @@ export function SendForm(){
             setLoading(true);
             if (type === 'admin') {
                 setUsers((await api.get("getBuyers")).data.map(v => [[v.id, v.name], v.name]));
+                setButtonDisabled(true);
             } else {
-                // Для обычного пользователя автоматически выбираем его как байера
+                // Для обычного пользователя всегда вызываем onUserSelect с его данными
                 const buyers = (await api.get("getBuyers")).data;
                 const currentBuyer = buyers.find(b => b.name === username);
                 if (currentBuyer) {
                     setName([currentBuyer.id, currentBuyer.name]);
-                    onUserSelect([currentBuyer.id, currentBuyer.name]);
+                    await onUserSelect([currentBuyer.id, currentBuyer.name]);
+                } else {
+                    // Если пользователь не найден в списке байеров, создаем временную запись
+                    const tempBuyer = { id: username, name: username };
+                    setName([tempBuyer.id, tempBuyer.name]);
+                    await onUserSelect([tempBuyer.id, tempBuyer.name]);
                 }
             }
             setLoading(false);
@@ -120,6 +127,8 @@ export function SendForm(){
         const [clicksData, setClicksData] = useState([]);
         const [count, setCount] = useState("");
         const [totalRevenue, setTotalRevenue] = useState(0);
+        const [buyerClicks, setBuyerClicks] = useState(0);
+        const [buyerRevenue, setBuyerRevenue] = useState(0);
         const [helper, setHelper] = useState("");
         const [helperError, setHelperError] = useState(false);
 
@@ -137,11 +146,28 @@ export function SendForm(){
                 return;
             }
             const selectedOffer = offersData.find(v => v.id == offer);
-
-            const res = (await api.post("addData", {offerData: selectedOffer, data: clicksData, buyerName: name[1], spend: spend, date: date.format("YYYY-MM-DD")})).data;
+            // Фильтруем клики только по btag пользователя
+            const filteredClicks = btag ? clicksData.filter(click => click.sub_id_6 === btag) : clicksData;
+            const res = (await api.post("addData", {
+                offerData: selectedOffer,
+                data: filteredClicks,
+                buyerName: name[1],
+                spend: spend,
+                date: date.format("YYYY-MM-DD")
+            })).data;
 
             setHelperError(res.status == "error");
             setHelper(res.status == "error" ? "Ошибка: " + res.message : "Отправлено");
+
+            // Очищаем данные после успешной отправки
+            if (res.status !== "error") {
+                setSpend("");
+                setClicksData([]);
+                setCount("");
+                setTotalRevenue(0);
+                setBuyerClicks(0);
+                setBuyerRevenue(0);
+            }
         }
 
         useEffect(() => {
@@ -160,19 +186,37 @@ export function SendForm(){
                         timezone: selectedTimezone 
                     })).data.data;
     
+                    console.log('All clicks:', clicksDataTemp);
+                    console.log('Filtering by btag:', btag);
+    
                     setClicksData(clicksDataTemp);
                     setCount(clicksDataTemp.length);
                     
                     // Считаем общий revenue
                     const revenue = clicksDataTemp.reduce((sum, click) => sum + (click.sale_revenue || 0), 0);
                     setTotalRevenue(revenue);
+
+                    // Считаем клики и revenue только по btag пользователя
+                    if (btag) {
+                        const buyerFilteredClicks = clicksDataTemp.filter(click => {
+                            console.log('Click sub_id_6:', click.sub_id_6, 'btag:', btag);
+                            return click.sub_id_6 === btag;
+                        });
+                        console.log('Filtered clicks:', buyerFilteredClicks);
+                        setBuyerClicks(buyerFilteredClicks.length);
+                        const buyerRevenue = buyerFilteredClicks.reduce((sum, click) => sum + (click.sale_revenue || 0), 0);
+                        setBuyerRevenue(buyerRevenue);
+                    } else {
+                        setBuyerClicks(0);
+                        setBuyerRevenue(0);
+                    }
                 }catch(e){
-                    console.log(e);
+                    console.log('Error in start:', e);
                 }
             };
     
             start();
-        }, [offer, offersData, date, selectedTimezone]);
+        }, [offer, offersData, date, selectedTimezone, btag]);
 
         useEffect(() => {
             offersSend[id] = send;
@@ -217,6 +261,12 @@ export function SendForm(){
                 <TextField type="number" label="Сумма спенда" variant="outlined" onChange={e => setSpend(e.target.value)} value={spend} required/><br/><br/>
                 <Typography>Общее количество: {count}</Typography>
                 <Typography>Общий revenue: {totalRevenue.toFixed(2)} $</Typography>
+                {btag && (
+                    <>
+                        <Typography sx={{ color: 'green' }}>Количество по байеру: {buyerClicks}</Typography>
+                        <Typography sx={{ color: 'green' }}>Revenue по байеру: {buyerRevenue.toFixed(2)} $</Typography>
+                    </>
+                )}
                 <FormHelperText error={helperError} sx={{color: "green"}}>{helper}</FormHelperText>
             </React.Fragment>
         );

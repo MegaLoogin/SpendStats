@@ -25,10 +25,8 @@ function RegForm() {
     const handleSubmit = (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        const username = data.get('username'), password = data.get('password'), tgId = data.get("tgId");
-        // console.log({username, password, tgId, type});
-        api.post("/registration", {username, password, tgId, type}).then((v) => alert(v));
-        // store.login(data.get('username'), data.get('password')).then(() => {router("/")});
+        const username = data.get('username'), password = data.get('password'), tgId = data.get("tgId"), btag = data.get("btag");
+        api.post("/registration", {username, password, tgId, type, btag}).then((v) => alert(v));
     };
 
   return (
@@ -80,7 +78,16 @@ function RegForm() {
               type="tgId"
               id="tgId"
               // autoComplete="current-password"
-            /><br/><br/>
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="btag"
+              label="Buyer Tag (btag)"
+              type="text"
+              id="btag"
+            />
             <SelectInput labelName="Тип аккаунта" value={type} setValue={setType} array={TYPES} callback={setType} required/>
             <Button
               type="submit"

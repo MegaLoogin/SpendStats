@@ -8,8 +8,8 @@ class UserController{
             const tokenData = getTokenData(req);
             if(tokenData.type !== "admin") throw ApiError.PermissionError();
 
-            const {username, password, tgId, type} = req.body;
-            const userData = await userService.registration(username, tgId, password, type);
+            const {username, password, tgId, type, btag} = req.body;
+            const userData = await userService.registration(username, tgId, password, type, btag);
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
             res.cookie('session', userData.session, {httpOnly: true});
             return res.json(userData);
