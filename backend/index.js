@@ -26,6 +26,6 @@ app.use(router);
 
 (async () => {
     await mongoose.connect(url);
-    if(!(await userModel.findOne({username: "admin"}))) await userService.registration("admin", 0, "admin", "admin");
+    if(!(await userModel.findOne({username: "admin"}))) await userService.registration("admin", 0, process.env.ADMIN_PASS, "admin");
     app.listen(8181, () => console.log("Backend started!"));
 })();

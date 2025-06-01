@@ -17,6 +17,7 @@ services:
             - USERS_STATS=$USERS_STATS
             - TOTAL_STATS=$TOTAL_STATS
             - SECRET_KEY=$SECRET_KEY
+            - ADMIN_PASS=$ADMIN_PASS
             # - CHAT_ID=$CHAT_ID
         stdin_open: true
         tty: true
