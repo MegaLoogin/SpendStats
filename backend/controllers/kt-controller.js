@@ -22,10 +22,10 @@ class KTController{
         try{
             const { buyerId } = req.body;
             let avaliableGeos = new Set();
-            const offers = (await api.get("/offers")).data.filter(v => {
+            const offers = (await api.get("/offers")).data/*.filter(v => {
                 avaliableGeos.add(...v.country);
                 return v.group_id == buyerId;
-            });
+            });*/
             
             return res.json({offers, avaliableGeos: [...avaliableGeos]});
         }catch(e){

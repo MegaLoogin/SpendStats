@@ -25,7 +25,7 @@ class DBService {
 
     async addOffer(idName, title, name, geo, dateStart, isSpend){
         try{
-            const offer = await offerModel.create({idName, name, title, geo, dateStart, isSpend});
+            const offer = await offerModel.create({idName, name, title, geo, dateStart, isSpend: false});
             await offer.save();
             await createModel(idName);
 
@@ -81,7 +81,7 @@ class DBService {
 
         if(!user) user = await this.addUser(username, username, 0, "buyer");
 
-        if(!offer) offer = await this.addOffer(offerData.id, offerData.name, offerData.name.split("|")[2].trim("").toLowerCase(), offerData.country, (new Date()).toISOString(), offerData.payout_auto);
+        if(!offer) offer = await this.addOffer(offerData.id, offerData.name, offerData.name.split("|")[2]?.trim("")?.toLowerCase() ?? offerData.name.split("|")[0]?.trim("")?.toLowerCase(), offerData.country, (new Date()).toISOString(), offerData.payout_auto);
 
         if(needLink) await this.linkUserToOffer(username, offerData.id);
 

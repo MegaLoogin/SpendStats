@@ -1,4 +1,4 @@
-import { Box, TextField, Button, Typography, FormHelperText } from "@mui/material";
+import { Box, TextField, Button, Typography, FormHelperText, Autocomplete, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 import { useEffect, useState } from "react";
 import dayjs from 'dayjs';
 import axios from "axios";
@@ -6,8 +6,28 @@ import { BasicDatePicker, SelectInput, SimpleBackdrop } from "./Components.js";
 import { useNavigate } from "react-router-dom";
 import { LOCAL_KEY } from "./App.js";
 import { api } from "./service/api.js";
+import { useContext } from "react";
+import { Context } from ".";
+import React from 'react';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
-const TIMEZONE = "Europe/London";
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+// Получаем список всех часовых поясов с их смещениями относительно UTC
+const timezones = Intl.supportedValuesOf('timeZone').map(zone => {
+    const offset = dayjs().tz(zone).utcOffset() / 60;
+    const sign = offset >= 0 ? '+' : '';
+    return {
+        value: zone,
+        label: `${zone} (UTC${sign}${offset})`
+    };
+}).sort((a, b) => {
+    const offsetA = dayjs().tz(a.value).utcOffset();
+    const offsetB = dayjs().tz(b.value).utcOffset();
+    return offsetA - offsetB;
+});
 
 let offersSend = {};
 
@@ -22,18 +42,17 @@ axios.defaults.maxContentLength = 10000000; // 10MB
 axios.defaults.maxBodyLength = 10000000; // 10MB
 
 export function SendForm(){
+    const { type, username } = useContext(Context).store.user;
     const [name, setName] = useState('');
-    
     const [users, setUsers] = useState([]);
-
     const [geosData, setGeosData] = useState([]);
     const [offersData, setOffersData] = useState([]);
-
     const [loading, setLoading] = useState(false);
-
     const [offersSections, setOffersSections] = useState([]);
-
     const [buttonDisabled, setButtonDisabled] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filteredOffers, setFilteredOffers] = useState([]);
+    const [selectedTimezone, setSelectedTimezone] = useState(dayjs.tz.guess());
 
     const navigate = useNavigate();
 
@@ -47,11 +66,9 @@ export function SendForm(){
 
         setGeosData(data.avaliableGeos);
         setOffersData(data.offers);
+        setFilteredOffers(data.offers);
 
         setButtonDisabled(false);
-        // setGeos(data.avaliableGeos.map(v => [v, v]));
-
-        // if(geo != "") onGeoSelect(geo);
     }
 
     async function onSend(){
@@ -65,12 +82,32 @@ export function SendForm(){
     useEffect(() => {
         async function onLoad(){
             setLoading(true);
-            setUsers((await api.get("getBuyers")).data.map(v => [[v.id, v.name], v.name]));
+            if (type === 'admin') {
+                setUsers((await api.get("getBuyers")).data.map(v => [[v.id, v.name], v.name]));
+            } else {
+                // Для обычного пользователя автоматически выбираем его как байера
+                const buyers = (await api.get("getBuyers")).data;
+                const currentBuyer = buyers.find(b => b.name === username);
+                if (currentBuyer) {
+                    setName([currentBuyer.id, currentBuyer.name]);
+                    onUserSelect([currentBuyer.id, currentBuyer.name]);
+                }
+            }
             setLoading(false);
         }
 
         onLoad();
     }, []);
+
+    // Фильтрация офферов при вводе в поиск
+    useEffect(() => {
+        if (offersData.length > 0) {
+            const filtered = offersData.filter(offer => 
+                offer.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setFilteredOffers(filtered);
+        }
+    }, [searchQuery, offersData]);
 
     function OfferSection(props){
         const { id } = props;
@@ -78,27 +115,23 @@ export function SendForm(){
         const [offer, setOffer] = useState('');
         const [date, setDate] = useState(dayjs().subtract(1, 'day'));
         const [spend, setSpend] = useState('');
-
         const [geos, setGeos] = useState([]);
         const [offers, setOffers] = useState([]);
-
         const [clicksData, setClicksData] = useState([]);
-
-        const [offerType, setOfferType] = useState("");
         const [count, setCount] = useState("");
-
+        const [totalRevenue, setTotalRevenue] = useState(0);
         const [helper, setHelper] = useState("");
         const [helperError, setHelperError] = useState(false);
 
         async function onGeoSelect(value){
             setOffer("");
-            setOffers(offersData.filter(v => v.country.includes(value)).map(v => [v.id, v.name]));
+            setOffers(filteredOffers.filter(v => v.country.includes(value)).map(v => [v.id, v.name]));
         }
 
         const onOfferDateSelect = async (value, dateValue) => { }
 
         async function send() {
-            if(offer == "" || geo == "" || spend == "") {
+            if(offer == "" || spend == "") {
                 setHelperError(true);
                 setHelper("Ошибка: заполните поля");
                 return;
@@ -121,38 +154,71 @@ export function SendForm(){
                     if(offer == "") return;
                     const selectedOffer = offersData.find(v => v.id == offer);
     
-                    // setLoading(true);
-                    let clicksDataTemp = (await api.post("getClicks", { date: date.toDate().toLocaleDateString(), offerId: offer, timezone: TIMEZONE })).data.data;
-                    // setLoading(false);
+                    let clicksDataTemp = (await api.post("getClicks", { 
+                        date: date.toDate().toLocaleDateString(), 
+                        offerId: offer, 
+                        timezone: selectedTimezone 
+                    })).data.data;
     
                     setClicksData(clicksDataTemp);
-    
-                    const type = selectedOffer.payout_auto ? "spend" : "cpa";
-    
-                    setOfferType(type);
                     setCount(clicksDataTemp.length);
+                    
+                    // Считаем общий revenue
+                    const revenue = clicksDataTemp.reduce((sum, click) => sum + (click.sale_revenue || 0), 0);
+                    setTotalRevenue(revenue);
                 }catch(e){
                     console.log(e);
                 }
             };
     
             start();
-        }, [offer, offersData, date]);
+        }, [offer, offersData, date, selectedTimezone]);
 
         useEffect(() => {
             offersSend[id] = send;
         }, [offer, geo, spend, date, offersSections]);
 
         return(
-            <div>
-                <SelectInput labelName="Гео" value={geo} setValue={setGeo} array={geos} callback={onGeoSelect} required/><br/><br/>
-                <SelectInput labelName="Оффер" value={offer} setValue={setOffer} array={offers} callback={onOfferDateSelect} required/><br/><br/>
+            <React.Fragment>
+                <Autocomplete
+                    fullWidth
+                    options={filteredOffers}
+                    getOptionLabel={(option) => option.name}
+                    value={offersData.find(v => v.id === offer) || null}
+                    onChange={(event, newValue) => {
+                        setOffer(newValue ? newValue.id : '');
+                    }}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Поиск оффера"
+                            margin="normal"
+                            required
+                        />
+                    )}
+                    filterOptions={(options, { inputValue }) => {
+                        const searchTerms = inputValue.toLowerCase().trim().split(/\s+/);
+                        
+                        return options.filter(option => {
+                            if (searchTerms[0].startsWith('id:')) {
+                                const searchId = searchTerms[0].substring(3);
+                                return option.id.toString().includes(searchId);
+                            }
+
+                            const optionName = option.name.toLowerCase();
+                            return searchTerms.every(term => 
+                                optionName.includes(term) || 
+                                option.id.toString().includes(term)
+                            );
+                        });
+                    }}
+                /><br/><br/>
                 <BasicDatePicker label="Выберите дату" value={date} setValue={setDate} callback={onOfferDateSelect}/><br/>
                 <TextField type="number" label="Сумма спенда" variant="outlined" onChange={e => setSpend(e.target.value)} value={spend} required/><br/><br/>
-                <Typography>Тип оффера: {offerType}</Typography>
                 <Typography>Общее количество: {count}</Typography>
+                <Typography>Общий revenue: {totalRevenue.toFixed(2)} $</Typography>
                 <FormHelperText error={helperError} sx={{color: "green"}}>{helper}</FormHelperText>
-            </div>
+            </React.Fragment>
         );
     }
 
@@ -163,13 +229,33 @@ export function SendForm(){
 
     return (
         <div>
-            <div>
-                <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "10px"}} variant="outlined" color="inherit" onClick={() => navigate(`/`)}>Меню</Button>
-                <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "10px"}} variant="outlined" color="inherit" onClick={() => navigate(`/stats`)}>Статистика</Button>
+            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px', backgroundColor: 'white'}}>
+                <div>
+                    <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "10px"}} variant="outlined" color="inherit" onClick={() => navigate(`/`)}>Меню</Button>
+                    <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "10px"}} variant="outlined" color="inherit" onClick={() => navigate(`/stats`)}>Статистика</Button>
+                </div>
+                <FormControl sx={{minWidth: 300, marginRight: "10px"}}>
+                    <InputLabel>Часовой пояс</InputLabel>
+                    <Select
+                        value={selectedTimezone}
+                        onChange={(e) => setSelectedTimezone(e.target.value)}
+                        label="Часовой пояс"
+                    >
+                        {timezones.map((zone) => (
+                            <MenuItem key={zone.value} value={zone.value}>
+                                {zone.label}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
             </div>
             <div style={{justifyContent: "center", display: "flex", backgroundColor: "#f3f0e7", margin: "10px", padding: "10px", height: "100%"}}>
                 <Box sx={{ minWidth: 350, maxWidth: 500 }} height={"min-content"} bgcolor={"white"} borderRadius={2} p={2} >
-                    <SelectInput labelName="Ник баера" value={name} setValue={setName} callback={onUserSelect} array={users} required/><br/><br/>
+                    {type === 'admin' && (
+                        <React.Fragment>
+                            <SelectInput labelName="Ник баера" value={name} setValue={setName} callback={onUserSelect} array={users} required/><br/><br/>
+                        </React.Fragment>
+                    )}
                     {offersSections.map(v => v)}
                     <br/>
                     <div style={{display: "block", textAlign: "center"}}>
