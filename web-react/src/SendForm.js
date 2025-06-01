@@ -54,6 +54,7 @@ export function SendForm(){
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredOffers, setFilteredOffers] = useState([]);
     const [selectedTimezone, setSelectedTimezone] = useState(dayjs.tz.guess());
+    const [userBtag, setUserBtag] = useState('');
 
     const navigate = useNavigate();
 
@@ -68,6 +69,11 @@ export function SendForm(){
         setGeosData(data.avaliableGeos);
         setOffersData(data.offers);
         setFilteredOffers(data.offers);
+        
+        // Устанавливаем btag выбранного баера
+        if (type === 'admin' && value[2]) {
+            setUserBtag(value[2]);
+        }
 
         setButtonDisabled(false);
     }
@@ -84,7 +90,14 @@ export function SendForm(){
         async function onLoad(){
             setLoading(true);
             if (type === 'admin') {
-                setUsers((await api.get("getBuyers")).data.map(v => [[v.id, v.name], v.name]));
+                const response = await api.get("getUsers");
+                if (response.data.status === "ok" && Array.isArray(response.data.data)) {
+                    // Фильтруем только баеров и добавляем btag в массив
+                    const buyers = response.data.data
+                        .filter(user => user.type === 'buyer')
+                        .map(v => [[v._id, v.username, v.btag], v.username]);
+                    setUsers(buyers);
+                }
                 setButtonDisabled(true);
             } else {
                 // Для обычного пользователя всегда вызываем onUserSelect с его данными
@@ -132,6 +145,9 @@ export function SendForm(){
         const [helper, setHelper] = useState("");
         const [helperError, setHelperError] = useState(false);
 
+        // Получаем актуальный btag в зависимости от типа пользователя
+        const currentBtag = type === 'admin' ? userBtag : btag;
+
         async function onGeoSelect(value){
             setOffer("");
             setOffers(filteredOffers.filter(v => v.country.includes(value)).map(v => [v.id, v.name]));
@@ -147,7 +163,7 @@ export function SendForm(){
             }
             const selectedOffer = offersData.find(v => v.id == offer);
             // Фильтруем клики только по btag пользователя
-            const filteredClicks = btag ? clicksData.filter(click => click.sub_id_6 === btag) : clicksData;
+            const filteredClicks = currentBtag ? clicksData.filter(click => click.sub_id_6 === currentBtag) : clicksData;
             const res = (await api.post("addData", {
                 offerData: selectedOffer,
                 data: filteredClicks,
@@ -187,7 +203,7 @@ export function SendForm(){
                     })).data.data;
     
                     console.log('All clicks:', clicksDataTemp);
-                    console.log('Filtering by btag:', btag);
+                    console.log('Filtering by btag:', currentBtag);
     
                     setClicksData(clicksDataTemp);
                     setCount(clicksDataTemp.length);
@@ -197,10 +213,10 @@ export function SendForm(){
                     setTotalRevenue(revenue);
 
                     // Считаем клики и revenue только по btag пользователя
-                    if (btag) {
+                    if (currentBtag) {
                         const buyerFilteredClicks = clicksDataTemp.filter(click => {
-                            console.log('Click sub_id_6:', click.sub_id_6, 'btag:', btag);
-                            return click.sub_id_6 === btag;
+                            console.log('Click sub_id_6:', click.sub_id_6, 'btag:', currentBtag);
+                            return click.sub_id_6 === currentBtag;
                         });
                         console.log('Filtered clicks:', buyerFilteredClicks);
                         setBuyerClicks(buyerFilteredClicks.length);
@@ -216,7 +232,7 @@ export function SendForm(){
             };
     
             start();
-        }, [offer, offersData, date, selectedTimezone, btag]);
+        }, [offer, offersData, date, selectedTimezone, currentBtag]);
 
         useEffect(() => {
             offersSend[id] = send;
@@ -261,10 +277,10 @@ export function SendForm(){
                 <TextField type="number" label="Сумма спенда" variant="outlined" onChange={e => setSpend(e.target.value)} value={spend} required/><br/><br/>
                 <Typography>Общее количество: {count}</Typography>
                 <Typography>Общий revenue: {totalRevenue.toFixed(2)} $</Typography>
-                {btag && (
+                {currentBtag && (
                     <>
-                        <Typography sx={{ color: 'green' }}>Количество по байеру: {buyerClicks}</Typography>
-                        <Typography sx={{ color: 'green' }}>Revenue по байеру: {buyerRevenue.toFixed(2)} $</Typography>
+                        <Typography sx={{ color: 'green' }}>Количество по баеру: {buyerClicks}</Typography>
+                        <Typography sx={{ color: 'green' }}>Revenue по баеру: {buyerRevenue.toFixed(2)} $</Typography>
                     </>
                 )}
                 <FormHelperText error={helperError} sx={{color: "green"}}>{helper}</FormHelperText>
