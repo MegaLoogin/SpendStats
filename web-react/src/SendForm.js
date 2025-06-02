@@ -53,7 +53,6 @@ export function SendForm(){
     const [buttonDisabled, setButtonDisabled] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredOffers, setFilteredOffers] = useState([]);
-    const [selectedTimezone, setSelectedTimezone] = useState(dayjs.tz.guess());
     const [userBtag, setUserBtag] = useState('');
 
     const navigate = useNavigate();
@@ -199,7 +198,7 @@ export function SendForm(){
                     let clicksDataTemp = (await api.post("getClicks", { 
                         date: date.toDate().toLocaleDateString(), 
                         offerId: offer, 
-                        timezone: selectedTimezone 
+                        timezone: "Europe/Moscow" 
                     })).data.data;
     
                     console.log('All clicks:', clicksDataTemp);
@@ -232,7 +231,7 @@ export function SendForm(){
             };
     
             start();
-        }, [offer, offersData, date, selectedTimezone, currentBtag]);
+        }, [offer, offersData, date, currentBtag]);
 
         useEffect(() => {
             offersSend[id] = send;
@@ -300,20 +299,6 @@ export function SendForm(){
                     <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "10px"}} variant="outlined" color="inherit" onClick={() => navigate(`/`)}>Меню</Button>
                     <Button sx={{backgroundColor: "white", margin: "5px", marginLeft: "10px"}} variant="outlined" color="inherit" onClick={() => navigate(`/stats`)}>Статистика</Button>
                 </div>
-                <FormControl sx={{minWidth: 300, marginRight: "10px"}}>
-                    <InputLabel>Часовой пояс</InputLabel>
-                    <Select
-                        value={selectedTimezone}
-                        onChange={(e) => setSelectedTimezone(e.target.value)}
-                        label="Часовой пояс"
-                    >
-                        {timezones.map((zone) => (
-                            <MenuItem key={zone.value} value={zone.value}>
-                                {zone.label}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
             </div>
             <div style={{justifyContent: "center", display: "flex", backgroundColor: "#f3f0e7", margin: "10px", padding: "10px", height: "100%"}}>
                 <Box sx={{ minWidth: 350, maxWidth: 500 }} height={"min-content"} bgcolor={"white"} borderRadius={2} p={2} >
