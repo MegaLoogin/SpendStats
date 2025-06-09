@@ -61,7 +61,7 @@ class KTController{
             const data = (await api.post("/clicks/log", {
                 range: { from: date + " 0:00", to: date + " 23:59", timezone },
                 limit: 20000, offset: 0,
-                columns: [ "sub_id", "is_unique_campaign", "is_lead", "is_sale", "sale_revenue", "sub_id_30" ],
+                columns: [ "sub_id", "is_unique_campaign", "is_lead", "is_sale", "sale_revenue", "sub_id_6" ],
                 filters: [ 
                     { name: "offer_id", operator: "EQUALS", expression: offerId }
                 ],
