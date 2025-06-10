@@ -82,8 +82,8 @@ class DBService {
         if(!user) user = await this.addUser(username, username, 0, "buyer");
 
         if(!offer) offer = await this.addOffer(offerData.id, offerData.name, offerData.name.split("|")[2]?.trim("")?.toLowerCase() ?? offerData.name.split("|")[0]?.trim("")?.toLowerCase(), offerData.country, (new Date()).toISOString(), offerData.payout_auto);
-
-        if(needLink) await this.linkUserToOffer(username, offerData.id);
+//if(needLink) 
+        await this.linkUserToOffer(username, offerData.id);
 
         const offerDataModel = models[offer.idName];
 
