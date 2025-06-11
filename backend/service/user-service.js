@@ -55,7 +55,7 @@ class UserService{
         const tokens = tokenService.generateTokens({username: userData.username, id: userData.id, session: userData.session, type: userData.type, allowedOffers: userData.allowedOffers, btag: userData.btag});
         await tokenService.saveToken(userData.id, tokens.refreshToken, userData.session);
 
-        console.log('userData', userData);
+        // console.log('userData', userData);
 
         return {...tokens, session: userData.session, user: {username: userData.username, type: userData.type, btag: userData.btag}};
     }
