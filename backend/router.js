@@ -8,17 +8,12 @@ import tgService from "./service/tg-service.js";
 export const router = new Router();
 
 router.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${req.body}`);
-    next();
-});
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${typeof req.body === 'string' && req.body.length > 500 ? req.body.slice(0, 500) + '... (truncated)' : req.body}`);
 
-router.use((req, res, next) => {
     const originalSend = res.send;
   
     res.send = function (body) {
       console.log(`⬅️ Response for ${req.method} ${req.originalUrl}`);
-      console.log(`Status: ${res.statusCode}`);
-      console.log('Headers:', res.getHeaders());
       console.log('Body:', typeof body === 'string' && body.length > 500 ? body.slice(0, 500) + '... (truncated)' : body);
   
       return originalSend.call(this, body);
