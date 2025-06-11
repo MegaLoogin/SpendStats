@@ -163,6 +163,7 @@ export function SendForm(){
             const selectedOffer = offersData.find(v => v.id == offer);
             // Фильтруем клики только по btag пользователя
             const filteredClicks = currentBtag ? clicksData.filter(click => click.sub_id_6 === currentBtag) : clicksData;
+            alert(currentBtag + " " + clicksData.length + " " + filteredClicks.length);
             const res = (await api.post("addData", {
                 offerData: selectedOffer,
                 data: filteredClicks,
