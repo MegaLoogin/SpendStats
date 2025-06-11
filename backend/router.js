@@ -8,7 +8,8 @@ import tgService from "./service/tg-service.js";
 export const router = new Router();
 
 router.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${typeof req.body === 'string' && req.body.length > 500 ? req.body.slice(0, 500) + '... (truncated)' : req.body}`);
+    // const b = JSON.stringify(req.body)
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${JSON.stringify(req.body)}`);
 
     const originalSend = res.send;
   
