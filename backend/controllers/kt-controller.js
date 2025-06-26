@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getClicksFromKT } from "../service/kt-service.js";
 
 const { KT_DOMAIN, KT_TOKEN } = process.env;
 
@@ -58,19 +59,9 @@ class KTController{
     async getClicks(req, res){
         try{
             const { date, timezone, offerId } = req.body;
-            const data = (await api.post("/clicks/log", {
-                range: { from: date + " 0:00", to: date + " 23:59", timezone },
-                limit: 20000, offset: 0,
-                columns: [ "sub_id", "is_unique_campaign", "is_lead", "is_sale", "sale_revenue", "sub_id_6" ],
-                filters: [ 
-                    { name: "offer_id", operator: "EQUALS", expression: offerId }
-                ],
-                sort: [ { name: "datetime", order: "ASC" } ]
-            })).data.rows;
-
+            const data = await getClicksFromKT(date, offerId, timezone);
             let ftdCount = 0;
             data.forEach(v => {if(v.is_sale) ftdCount++});
-
             return res.json({data, ftdCount});
         }catch(e){
             console.log(e);

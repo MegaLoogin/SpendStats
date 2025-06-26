@@ -23,4 +23,6 @@ router.post("/getOffersByUser", auth, dbController.getOffersByUser);
 router.get("/getUsers", auth, dbController.getUsers);
 router.post("/getDataByFilter", auth, dbController.getDataByFilter);
 
+router.post("/recalcAllStatsFor30Days", auth, dbController.recalcAllStatsFor30Days);
+
 router.get('/getTotal', (req, res) => { tgService.resendTotal(); res.send(200); });

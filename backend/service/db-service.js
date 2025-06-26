@@ -4,7 +4,7 @@ import offerModel from "../models/offer-model.js";
 import userModel from "../models/user-model.js";
 import bcrypt from 'bcrypt';
 import { ApiError } from "../middle/error.js";
-import tgService from "./tg-service.js";
+import { getClicksFromKT } from "./kt-service.js";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -142,11 +142,20 @@ class DBService {
 
     arrayToObject = (arr, key) =>
         arr.reduce((acc, obj) => {
-            acc[obj[key]] = obj;
+            if(obj[key] in acc){
+                for(let i in obj){
+                    if(typeof obj[i] === 'number'){
+                        acc[obj[key]][i] = (acc[obj[key]][i] || 0) + obj[i];
+                    }
+                }
+            }else{
+                acc[obj[key]] = obj;
+            }
             return acc;
         }, {});
 
     mergeObjectsWithFilter = (objects, allowedKeys) => {
+        console.log(objects, allowedKeys);
         return objects.reduce((acc, current) => {
             for (const key in current) {
                 acc[key] = acc[key] || {};
@@ -194,6 +203,7 @@ class DBService {
                 /** @type {Model} */
                 const data = await models[offer.idName];
                 const result = await data.find({date: { $gte: dateStart, $lte: dateEnd }}, "-data", {sort: {date: -1}});
+                console.log(result);
                 offersData.push(this.arrayToObject(result, "date"));
             }
 
@@ -227,6 +237,54 @@ class DBService {
 
         const offers = await offerModel.find({users: { $in: [user.id] }});
         return offers;
+    }
+
+    async recalcAllStatsFor30Days() {
+        const today = new Date();
+        const startDate = new Date(today.getTime() - 30 * ONE_DAY); // 30 дней включая сегодня
+
+        const offers = await offerModel.find({});
+        let total = 0;
+        let updated = 0;
+        for (const offer of offers) {
+            const DataModel = models[offer.idName];
+            if (!DataModel) continue;
+
+            // Находим все документы за 30 дней
+            const docs = await DataModel.find({
+                date: { $gte: startDate, $lte: today }
+            });
+
+            for (const doc of docs) {
+                total++;
+                const user = await userModel.findById(doc.user);
+                if (!user || !user.btag) continue;
+
+                const dateStr = doc.date.toISOString().slice(0, 10);
+                const clicks = await getClicksFromKT(dateStr, offer.idName, "Europe/Moscow");
+                const buyerClicks = clicks.filter(click => click.sub_id_6 === user.btag);
+
+                let click = 0, lead = 0, sale = 0, revenue = 0;
+                buyerClicks.forEach(v => {
+                    if(v.is_unique_campaign) click++;
+                    if(v.is_lead) lead++;
+                    if(v.is_sale) sale++;
+                    revenue += v.sale_revenue;
+                });
+
+                // Проверяем, изменились ли значения
+                if (doc.click !== click || doc.lead !== lead || doc.sale !== sale || doc.revenue !== revenue || doc.profit !== revenue - (doc.spend || 0)) {
+                    doc.click = click;
+                    doc.lead = lead;
+                    doc.sale = sale;
+                    doc.revenue = revenue;
+                    doc.profit = revenue - (doc.spend || 0);
+                    await doc.save();
+                    updated++;
+                }
+            }
+        }
+        return { total, updated };
     }
 }
 

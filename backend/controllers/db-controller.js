@@ -1,5 +1,6 @@
 import { getTokenData } from "../middle/auth.js";
 import dbService from "../service/db-service.js";
+import auth from "../middle/auth.js";
 
 class DBController {
     async addData(req, res){
@@ -62,6 +63,16 @@ class DBController {
         }catch(e){
             console.log(e);
             res.json({"status": "error", "text": e.message});
+        }
+    }
+
+    async recalcAllStatsFor30Days(req, res) {
+        try {
+            const { total, updated } = await dbService.recalcAllStatsFor30Days();
+            res.json({ status: "ok", total, updated });
+        } catch (e) {
+            console.log(e);
+            res.status(500).json({ status: "error", message: e.message });
         }
     }
 

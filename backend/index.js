@@ -7,6 +7,7 @@ import cron from "node-cron";
 import userService from "./service/user-service.js";
 import userModel from "./models/user-model.js";
 import cookieParser from "cookie-parser";
+import dbService from "./service/db-service.js";
 
 const { MONGO_USER, MONGO_PASS, MONGO_DB } = process.env;
 
@@ -23,6 +24,17 @@ app.use(router);
 
 // cron.schedule("0 12 * * *", tgService.resendBuyers);
 // cron.schedule("0 8 * * *", tgService.resendTotal);
+
+// Каждый день в 3:00 ночи
+cron.schedule("0 3 * * *", async () => {
+    try {
+        console.log('Начинаю массовый перерасчет статистики за 30 дней...');
+        await dbService.recalcAllStatsFor30Days();
+        console.log('Массовый перерасчет завершен!');
+    } catch (e) {
+        console.error('Ошибка массового перерасчета:', e);
+    }
+});
 
 (async () => {
     await mongoose.connect(url);
