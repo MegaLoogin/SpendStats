@@ -50,7 +50,8 @@ class DBService {
             //     offerId: offer.id,
             //     lastDate: new Date()
             // }}}));
-            offer.users.push(user.id);
+            if(!offer.users.includes(user.id))
+                offer.users.push(user.id);
 
             // console.log(user.offers);
 
