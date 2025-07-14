@@ -7,6 +7,8 @@ import tgService from "./service/tg-service.js";
 
 export const router = new Router();
 
+import offerController from "./controllers/offer-controller.js";
+
 router.post("/registration", userController.registration);
 router.post("/login", userController.login);
 router.post("/logout", userController.logout);
@@ -26,3 +28,6 @@ router.post("/getDataByFilter", auth, dbController.getDataByFilter);
 router.post("/recalcAllStatsFor30Days", auth, dbController.recalcAllStatsFor30Days);
 
 router.get('/getTotal', (req, res) => { tgService.resendTotal(); res.send(200); });
+
+// Новый маршрут для получения всех офферов с числовым id
+router.get("/numericOffers", offerController.getNumericIdOffers);
