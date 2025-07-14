@@ -21,7 +21,8 @@ const offerController = {
                         btag: user ? user.btag : null,
                         spend: doc.spend,
                         date: doc.date ? doc.date.toISOString().slice(0, 10) : null,
-                        commission: 4
+                        commission: 4,
+                        offer_id: offer.idName,
                     });
                 }
             }
