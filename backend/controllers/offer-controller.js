@@ -2,12 +2,13 @@
 import offerModel from "../models/offer-model.js";
 import models from "../models/data-model.js";
 import userModel from "../models/user-model.js";
+import mongoose from "mongoose";
 
 const offerController = {
     async getNumericIdOffers(req, res) {
         try {
             // Получаем все коллекции в базе
-            const collections = await req.app.get('mongoose').connection.db.listCollections().toArray();
+            const collections = await mongoose.connection.db.listCollections().toArray();
             let result = [];
             for (const col of collections) {
                 // Пропускаем служебные коллекции
